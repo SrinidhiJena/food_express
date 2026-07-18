@@ -32,18 +32,18 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     private void seedUser() {
-        if (userRepository.count() == 0) {
-            System.out.println("🌱 Seeding developer user...");
-            User devUser = new User();
-            devUser.setName("Developer");
-            devUser.setEmail("dev@foodexpress.com");
-            devUser.setPhone("1234567890");
-            devUser.setPassword(passwordEncoder.encode("dev@123"));
-            devUser.setRole("ADMIN"); // Let's make devUser an ADMIN
-            
-            userRepository.save(devUser);
-            System.out.println("✅ Developer user seeded successfully!");
-        }
+        System.out.println("🌱 Cleaning and seeding developer user...");
+        userRepository.deleteAll(); // Force clean slate so the updated credentials apply
+        
+        User devUser = new User();
+        devUser.setName("Developer");
+        devUser.setEmail("dev@example.com");
+        devUser.setPhone("1234567890");
+        devUser.setPassword(passwordEncoder.encode("dev"));
+        devUser.setRole("ADMIN");
+        
+        userRepository.save(devUser);
+        System.out.println("✅ Developer user seeded successfully!");
     }
 
     private void seedFoods() {

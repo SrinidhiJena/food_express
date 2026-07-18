@@ -93,6 +93,82 @@ public class FoodController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteFood(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate hex ID format (24 characters)
+        if (id == null || !id.matches("^[0-9a-fA-F]{24}$")) {
+            response.put("success", false);
+            response.put("message", "Invalid food item ID format");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Food food = foodRepository.findById(id).orElse(null);
+        if (food == null) {
+            response.put("success", false);
+            response.put("message", "Food item not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        foodRepository.delete(food);
+
+        response.put("success", true);
+        response.put("message", "Food item deleted successfully");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/price")
+    public ResponseEntity<Map<String, Object>> updatePrice(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate hex ID format (24 characters)
+        if (id == null || !id.matches("^[0-9a-fA-F]{24}$")) {
+            response.put("success", false);
+            response.put("message", "Invalid food item ID format");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Object priceObj = body.get("price");
+        if (priceObj == null) {
+            response.put("success", false);
+            response.put("message", "Price value is required");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        double price;
+        try {
+            price = Double.parseDouble(priceObj.toString());
+        } catch (NumberFormatException e) {
+            response.put("success", false);
+            response.put("message", "Price must be a valid number");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        if (price < 0) {
+            response.put("success", false);
+            response.put("message", "Price must be a positive number");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Food food = foodRepository.findById(id).orElse(null);
+        if (food == null) {
+            response.put("success", false);
+            response.put("message", "Food item not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        food.setPrice(price);
+        foodRepository.save(food);
+
+        response.put("success", true);
+        response.put("message", "Price updated successfully");
+        response.put("data", food);
+
+        return ResponseEntity.ok(response);
+    }
+
     // Helper request DTO class
     public static class FoodRequest {
         private String foodName;

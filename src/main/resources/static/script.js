@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initOrders();
     updateHeader();
     initMobileNav();
+    initAdmin();
 });
 
 
@@ -877,7 +878,11 @@ function updateHeader() {
             if (welcome) welcome.textContent = `Hi, ${(user.name || user.email || "").split(" ")[0]}`;
             guestEls.forEach(el => el.style.display = "none");
             userEls.forEach(el => {
-                el.style.display = el.classList.contains("user-profile") ? "inline-flex" : "";
+                if (el.classList.contains("admin-only-link")) {
+                    el.style.display = user.role === "ADMIN" ? "inline-flex" : "none";
+                } else {
+                    el.style.display = el.classList.contains("user-profile") ? "inline-flex" : "";
+                }
             });
         } catch {}
     } else {
@@ -1166,6 +1171,318 @@ function renderMenuPage(page) {
             document.querySelector(".menu-main").scrollIntoView({ behavior: "smooth" });
         };
         paginationBar.appendChild(nextBtn);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 13. ADMIN PANEL (Popup Menu Type Dashboard)
+// ─────────────────────────────────────────────────────────────
+function initAdmin() {
+    const adminLink = document.getElementById("link-admin");
+    const adminModal = document.getElementById("admin-modal");
+    const closeAdminBtn = document.getElementById("close-admin-modal");
+
+    if (adminLink && adminModal) {
+        adminLink.addEventListener("click", e => {
+            e.preventDefault();
+            adminModal.style.display = "flex";
+            showAdminTab("stats");
+            loadStats();
+        });
+    }
+
+    if (closeAdminBtn && adminModal) {
+        closeAdminBtn.addEventListener("click", () => {
+            adminModal.style.display = "none";
+        });
+        adminModal.addEventListener("click", e => {
+            if (e.target === adminModal) adminModal.style.display = "none";
+        });
+    }
+
+    // Tab buttons
+    const tabStats = document.getElementById("tab-admin-stats");
+    const tabFoods = document.getElementById("tab-admin-foods");
+    const tabOrders = document.getElementById("tab-admin-orders");
+
+    // Tab sections
+    const secStats = document.getElementById("admin-stats-section");
+    const secFoods = document.getElementById("admin-foods-section");
+    const secOrders = document.getElementById("admin-orders-section");
+
+    function showAdminTab(tab) {
+        tabStats?.classList.toggle("active", tab === "stats");
+        tabFoods?.classList.toggle("active", tab === "foods");
+        tabOrders?.classList.toggle("active", tab === "orders");
+
+        if (secStats) secStats.style.display = tab === "stats" ? "block" : "none";
+        if (secFoods) secFoods.style.display = tab === "foods" ? "block" : "none";
+        if (secOrders) secOrders.style.display = tab === "orders" ? "block" : "none";
+
+        if (tab === "stats") loadStats();
+        if (tab === "foods") loadAdminFoods();
+        if (tab === "orders") loadAdminOrders();
+    }
+
+    tabStats?.addEventListener("click", () => showAdminTab("stats"));
+    tabFoods?.addEventListener("click", () => showAdminTab("foods"));
+    tabOrders?.addEventListener("click", () => showAdminTab("orders"));
+
+    // ─── Stats ──────────────────────────────────────────────
+    async function loadStats() {
+        const token = localStorage.getItem("token");
+        try {
+            const [foodRes, orderRes] = await Promise.all([
+                fetch("/api/foods"),
+                fetch("/api/orders", { headers: { "Authorization": `Bearer ${token}` } })
+            ]);
+            const foods = await foodRes.json();
+            const orders = await orderRes.json();
+
+            const totalFoods = foods.data ? foods.data.length : 0;
+            const totalOrders = orders.data ? orders.data.length : 0;
+            const revenue = orders.data ? orders.data.reduce((s, o) => s + (o.totalPrice || 0), 0) : 0;
+
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set("stat-foods", String(totalFoods));
+            set("stat-orders", String(totalOrders));
+            set("stat-revenue", `₹${Number(revenue).toFixed(2)}`);
+        } catch (e) {
+            console.error("Failed to load stats", e);
+        }
+    }
+
+    // ─── Foods ──────────────────────────────────────────────
+    async function loadAdminFoods() {
+        const tb = document.getElementById("admin-foods-table-body");
+        if (!tb) return;
+        tb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">Loading…</td></tr>`;
+
+        try {
+            const res = await fetch("/api/foods");
+            const resData = await res.json();
+            if (!resData.data || resData.data.length === 0) {
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-3);">No foods found.</td></tr>`;
+                return;
+            }
+            tb.innerHTML = "";
+            resData.data.forEach(f => {
+                const row = document.createElement("tr");
+                row.id = `admin-fr-${f._id}`;
+                row.style.borderBottom = "1px solid var(--border)";
+                row.innerHTML = `
+                    <td style="padding:10px 15px;"><img src="${esc(f.image || 'images/pizza.jpg')}" style="width:40px; height:40px; object-fit:cover; border-radius:8px;" onerror="this.src='images/pizza.jpg'"></td>
+                    <td style="padding:10px 15px;"><strong>${esc(f.foodName)}</strong></td>
+                    <td style="padding:10px 15px;"><span class="category-badge">${esc(f.category)}</span></td>
+                    <td style="padding:10px 15px;">
+                        <div id="admin-pe-${f._id}" style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="price-val">₹${Number(f.price).toFixed(2)}</span>
+                            <input type="number" class="price-inp" value="${f.price}" min="0" style="display:none; width:70px; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text);">
+                        </div>
+                    </td>
+                    <td style="padding:10px 15px;">
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem; margin:0;" onclick="editPrice('${f._id}', this)">✏️ Price</button>
+                            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem; margin:0; border-color:var(--danger); color:var(--danger);" onclick="delFood('${f._id}')">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tb.appendChild(row);
+            });
+        } catch (e) {
+            tb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--danger);">Error loading foods.</td></tr>`;
+        }
+    }
+
+    // ─── Price Edit Handler ─────────────────────────────────
+    window.editPrice = async (id, btn) => {
+        const wrap = document.getElementById(`admin-pe-${id}`);
+        if (!wrap) return;
+        const span = wrap.querySelector(".price-val");
+        const inp = wrap.querySelector(".price-inp");
+        const token = localStorage.getItem("token");
+
+        if (inp.style.display === "none") {
+            inp.style.display = "inline-block";
+            span.style.display = "none";
+            btn.textContent = "💾 Save";
+        } else {
+            const np = Number(inp.value);
+            if (isNaN(np) || np < 0) {
+                alert("Please enter a valid price.");
+                return;
+            }
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/api/foods/${id}/price`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ price: np })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    span.textContent = `₹${np.toFixed(2)}`;
+                    inp.style.display = "none";
+                    span.style.display = "";
+                    btn.textContent = "✏️ Price";
+                } else {
+                    alert(data.message || "Failed to update price");
+                }
+            } catch (err) {
+                alert("Failed to update price.");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    };
+
+    // ─── Delete Food Handler ────────────────────────────────
+    window.delFood = async id => {
+        if (!confirm("Are you sure you want to delete this food item?")) return;
+        const token = localStorage.getItem("token");
+        try {
+            const res = await fetch(`/api/foods/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById(`admin-fr-${id}`)?.remove();
+                loadStats();
+            } else {
+                alert(data.message || "Failed to delete item");
+            }
+        } catch (err) {
+            alert("Failed to delete food item.");
+        }
+    };
+
+    // ─── Orders ─────────────────────────────────────────────
+    async function loadAdminOrders() {
+        const tb = document.getElementById("admin-orders-table-body");
+        if (!tb) return;
+        tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Loading…</td></tr>`;
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("/api/orders", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const resData = await res.json();
+            if (!resData.data || resData.data.length === 0) {
+                tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-3);">No orders found.</td></tr>`;
+                return;
+            }
+            tb.innerHTML = "";
+            resData.data.forEach(o => {
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-IN") : "—";
+                const row = document.createElement("tr");
+                row.style.borderBottom = "1px solid var(--border)";
+                
+                const customer = o.userId ? esc(o.userId.email || o.userId.name || "—") : esc(o.userEmail || "—");
+
+                row.innerHTML = `
+                    <td style="padding:10px 15px;"><code>#${o._id.slice(-8).toUpperCase()}</code></td>
+                    <td style="padding:10px 15px;">${customer}</td>
+                    <td style="padding:10px 15px;">${(o.foodItems || []).map(i => `${esc(i.food.foodName)}×${i.quantity}`).join(", ")}</td>
+                    <td style="padding:10px 15px;"><strong>₹${Number(o.totalPrice).toFixed(2)}</strong></td>
+                    <td style="padding:10px 15px;">
+                        <select style="padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); font-size:0.8rem;" onchange="updateOrderStatus('${o._id}', this.value)">
+                            ${["Pending", "Preparing", "On the Way", "Delivered", "Cancelled"].map(s => `<option ${o.orderStatus === s ? "selected" : ""}>${s}</option>`).join("")}
+                        </select>
+                    </td>
+                    <td style="padding:10px 15px;">${date}</td>
+                `;
+                tb.appendChild(row);
+            });
+        } catch (e) {
+            tb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--danger);">Error loading orders.</td></tr>`;
+        }
+    }
+
+    // ─── Update Order Status Handler ────────────────────────
+    window.updateOrderStatus = async (id, status) => {
+        const token = localStorage.getItem("token");
+        try {
+            const res = await fetch(`/api/orders/${id}/status`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ orderStatus: status })
+            });
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || "Failed to update order status");
+            }
+        } catch (err) {
+            alert("Failed to update status.");
+        }
+    };
+
+    // ─── Add Food Form Submit ───────────────────────────────
+    const addFoodForm = document.getElementById("admin-add-food-form");
+    if (addFoodForm) {
+        addFoodForm.addEventListener("submit", async e => {
+            e.preventDefault();
+            const token = localStorage.getItem("token");
+            const submitBtn = addFoodForm.querySelector("button[type='submit']");
+            const errEl = document.getElementById("admin-food-error-msg");
+            const succEl = document.getElementById("admin-food-success-msg");
+
+            if (errEl) errEl.style.display = "none";
+            if (succEl) succEl.style.display = "none";
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Adding…";
+
+            const payload = {
+                foodName: document.getElementById("admin-food-name").value.trim(),
+                category: document.getElementById("admin-food-category").value.trim(),
+                price: Number(document.getElementById("admin-food-price").value),
+                image: document.getElementById("admin-food-image").value.trim() || "images/pizza.jpg",
+                description: document.getElementById("admin-food-desc").value.trim()
+            };
+
+            try {
+                const res = await fetch("/api/foods/add", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (succEl) {
+                        succEl.textContent = "✅ Food item added successfully!";
+                        succEl.style.display = "block";
+                    }
+                    addFoodForm.reset();
+                    loadAdminFoods();
+                    loadStats();
+                    window.dispatchEvent(new Event("menu-updated"));
+                } else {
+                    if (errEl) {
+                        errEl.textContent = data.message || "Failed to add food";
+                        errEl.style.display = "block";
+                    }
+                }
+            } catch (err) {
+                if (errEl) {
+                    errEl.textContent = "An error occurred while adding food item.";
+                    errEl.style.display = "block";
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Add Food Item";
+            }
+        });
     }
 }
 

@@ -31,6 +31,7 @@
                 <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">☀️</button>
                 <a href="login.html" class="btn btn-outline btn-sm guest-link" id="link-login">Sign In</a>
                 <a href="orders.html" class="user-link nav-action-link" id="link-orders" style="display:none;">Orders</a>
+                <a href="#" class="user-link nav-action-link admin-only-link" id="link-admin" style="display:none; color:var(--primary); font-weight:700;">Admin Panel</a>
                 <div class="user-profile user-link" style="display:none; align-items:center; gap:0.5rem;">
                     <span id="welcome-msg" style="color:var(--text-2);font-weight:700;font-size:0.85rem;"></span>
                     <a href="#" id="logout-btn" class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:0.72rem;margin:0;">Logout</a>
@@ -256,6 +257,99 @@
             <div id="signup-error-msg" class="auth-error-msg" style="display:none;"></div>
             <button type="submit" class="btn btn-primary btn-block">Create Account →</button>
         </form>
+    </div>
+</div>
+
+<!-- ===== ADMIN PANEL MODAL (Popup Menu Type) ===== -->
+<div id="admin-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" style="max-width: 900px; padding: 2.2rem 2rem;">
+        <div class="modal-header" style="padding: 0 0 1rem 0; background: transparent; border-bottom: 1px solid var(--border);">
+            <h3 style="font-size:1.45rem; font-weight:700; color:var(--text); font-family:'Outfit',sans-serif;">Admin Control Center</h3>
+            <button id="close-admin-modal" class="modal-close-btn" style="position:absolute; top:1.5rem; right:1.5rem;">&times;</button>
+        </div>
+        
+        <!-- Admin Navigation Tabs -->
+        <div class="auth-tabs" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+            <button id="tab-admin-stats" class="auth-tab active">Dashboard Stats</button>
+            <button id="tab-admin-foods" class="auth-tab">Manage Menu</button>
+            <button id="tab-admin-orders" class="auth-tab">Manage Orders</button>
+        </div>
+
+        <!-- 1. Stats Section -->
+        <div id="admin-stats-section" class="admin-tab-content">
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                <div class="stat-card" style="background:var(--bg-2); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); text-align: center;">
+                    <span style="font-size: 0.9rem; font-weight:600; color:var(--text-2);">Total Food Items</span>
+                    <h2 id="stat-foods" style="font-size: 2.5rem; font-weight:800; color:var(--primary); margin-top:0.5rem;">0</h2>
+                </div>
+                <div class="stat-card" style="background:var(--bg-2); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); text-align: center;">
+                    <span style="font-size: 0.9rem; font-weight:600; color:var(--text-2);">Total Orders Placed</span>
+                    <h2 id="stat-orders" style="font-size: 2.5rem; font-weight:800; color:var(--primary); margin-top:0.5rem;">0</h2>
+                </div>
+                <div class="stat-card" style="background:var(--bg-2); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); text-align: center;">
+                    <span style="font-size: 0.9rem; font-weight:600; color:var(--text-2);">Total Revenue Earned</span>
+                    <h2 id="stat-revenue" style="font-size: 2.5rem; font-weight:800; color:var(--primary); margin-top:0.5rem;">₹0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Foods Section -->
+        <div id="admin-foods-section" class="admin-tab-content" style="display:none;">
+            <div class="admin-table-wrap" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem;">
+                <table class="admin-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead style="position: sticky; top:0; background:var(--bg-card); z-index:10;">
+                        <tr style="border-bottom:1px solid var(--border); font-size:0.85rem; color:var(--text-2);">
+                            <th style="padding:10px 15px;">Image</th>
+                            <th style="padding:10px 15px;">Name</th>
+                            <th style="padding:10px 15px;">Category</th>
+                            <th style="padding:10px 15px;">Price</th>
+                            <th style="padding:10px 15px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-foods-table-body" style="font-size:0.88rem;">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Quick Add Form -->
+            <form id="admin-add-food-form" class="auth-form-content" style="border-top:1px dashed var(--border); padding-top:1.25rem;">
+                <h4 style="font-size: 1.05rem; font-weight:700; color:var(--text); margin-bottom:0.5rem;">+ Add New Food Item</h4>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <div class="input-group"><input type="text" id="admin-food-name" placeholder="Food Name (e.g. Garlic Naan)" required></div>
+                    <div class="input-group"><input type="text" id="admin-food-category" placeholder="Category (e.g. Breads)" required></div>
+                    <div class="input-group"><input type="number" id="admin-food-price" min="0" step="0.01" placeholder="Price (₹) (e.g. 59)" required></div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-top:0.75rem;">
+                    <div class="input-group"><input type="text" id="admin-food-image" placeholder="Image path (e.g. images/naan.jpg)" required></div>
+                    <div class="input-group"><input type="text" id="admin-food-desc" placeholder="Short Description..." required></div>
+                </div>
+                <div id="admin-food-error-msg" class="auth-error-msg" style="display:none; margin-top:0.75rem;"></div>
+                <div id="admin-food-success-msg" class="auth-error-msg" style="display:none; background:rgba(74,222,128,0.08); border-color:rgba(74,222,128,0.15); color:#4ade80; margin-top:0.75rem;"></div>
+                <button type="submit" class="btn btn-primary btn-block" style="padding: 10px; margin-top:0.75rem;">Add Food Item</button>
+            </form>
+        </div>
+
+        <!-- 3. Orders Section -->
+        <div id="admin-orders-section" class="admin-tab-content" style="display:none;">
+            <div class="admin-table-wrap" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px;">
+                <table class="admin-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead style="position: sticky; top:0; background:var(--bg-card); z-index:10;">
+                        <tr style="border-bottom:1px solid var(--border); font-size:0.85rem; color:var(--text-2);">
+                            <th style="padding:10px 15px;">Order ID</th>
+                            <th style="padding:10px 15px;">Customer</th>
+                            <th style="padding:10px 15px;">Items</th>
+                            <th style="padding:10px 15px;">Total</th>
+                            <th style="padding:10px 15px;">Status</th>
+                            <th style="padding:10px 15px;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-orders-table-body" style="font-size:0.88rem;">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

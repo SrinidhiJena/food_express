@@ -89,6 +89,7 @@ public class AuthController {
         userData.put("name", savedUser.getName());
         userData.put("email", savedUser.getEmail());
         userData.put("phone", savedUser.getPhone());
+        userData.put("role", savedUser.getRole());
         userData.put("token", token);
 
         response.put("success", true);
@@ -133,6 +134,7 @@ public class AuthController {
         userData.put("name", user.getName());
         userData.put("email", user.getEmail());
         userData.put("phone", user.getPhone());
+        userData.put("role", user.getRole());
         userData.put("token", token);
 
         response.put("success", true);

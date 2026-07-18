@@ -52,7 +52,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/foods/**").permitAll()
                 
                 // Protected REST endpoints
-                .requestMatchers(HttpMethod.POST, "/api/foods/add").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/foods/add").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/foods/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/foods/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/orders").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasRole("ADMIN")
                 .requestMatchers("/api/orders/**").authenticated()
                 
                 // Allow public access to static UI files & images

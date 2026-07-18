@@ -128,6 +128,57 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllOrders() {
+        Map<String, Object> response = new HashMap<>();
+        List<Order> orders = orderRepository.findAllByOrderByCreatedAtDesc();
+        
+        response.put("success", true);
+        response.put("count", orders.size());
+        response.put("data", orders);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Map<String, Object>> updateOrderStatus(@PathVariable String id, @RequestBody Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate hex ID format (24 characters)
+        if (id == null || !id.matches("^[0-9a-fA-F]{24}$")) {
+            response.put("success", false);
+            response.put("message", "Invalid order ID format");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        String status = body.get("orderStatus");
+        if (status == null || status.trim().isEmpty()) {
+            status = body.get("status");
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            response.put("success", false);
+            response.put("message", "orderStatus is required");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            response.put("success", false);
+            response.put("message", "Order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        order.setOrderStatus(status.trim());
+        orderRepository.save(order);
+
+        response.put("success", true);
+        response.put("message", "Order status updated successfully");
+        response.put("data", order);
+
+        return ResponseEntity.ok(response);
+    }
+
     // Helper request DTO classes
     public static class OrderRequest {
         private List<OrderItemRequest> foodItems;

@@ -17,3 +17,12 @@ dist/
 .env.*.local
 .DS_Store
 Thumbs.db
+
+# JVM / Maven build output
+target/
+.mvn/
+*.class
+*.jar
+*.war
+*.ear
+*.log

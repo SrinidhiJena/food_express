@@ -4,6 +4,28 @@ A modern, full-stack food delivery marketplace platform built with **Astro**, **
 
 ---
 
+## 🍃 Spring Boot & Spring Security Backend (Migrated Version)
+
+We have converted the application to a robust **Spring Boot** backend using **Spring Security** (stateless JWT authentication) and an in-memory **H2 database** (auto-seeded on startup). The vanilla HTML/CSS/JavaScript client is served directly from the embedded Tomcat server on port `8082`.
+
+### 🚀 Quick Start (Spring Boot)
+
+1. **Run the Server**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+2. **Access the App**:
+   Open **[http://localhost:8082](http://localhost:8082)** in your browser.
+3. **Log In (Developer Credentials)**:
+   - **Email**: `dev@foodexpress.com`
+   - **Password**: `dev@123`
+4. **H2 Database Console**:
+   Available at **[http://localhost:8082/h2-console](http://localhost:8082/h2-console)** (Driver: `org.h2.Driver`, JDBC URL: `jdbc:h2:mem:foodexpress`, Username: `sa`, Password: *blank*).
+
+
+---
+
+
 ## 🚀 Live Demo
 * **Deployment URL:** [https://foodexpress-8f825.web.app](https://foodexpress-8f825.web.app)
 

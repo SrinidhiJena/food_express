@@ -1,184 +1,144 @@
-# 🍔 FoodExpress — Fullstack Food Delivery App
+# 🍔 FoodExpress — Premium Food Delivery Marketplace & Dispatch Dashboard
 
-A simple fullstack food delivery web application built as a college project using **Node.js**, **Express**, **MongoDB**, and **Vanilla HTML/CSS/JS**.
+A modern, full-stack food delivery marketplace platform built with **Astro**, **TypeScript**, and **Firebase** (Authentication, Firestore, and Hosting). FoodExpress acts as a middleman hub connecting customers with local partner restaurants, featuring a live order dispatch pipeline and a unified role-based administrative control center.
 
 ---
 
-## 📁 Project Structure
+## 🚀 Live Demo
+* **Deployment URL:** [https://foodexpress-8f825.web.app](https://foodexpress-8f825.web.app)
 
-```
+---
+
+## ✨ Key Features
+
+### 🏪 1. Partner Restaurant Marketplace (Middleman Architecture)
+- Food items are categorized and mapped directly to partner restaurants (e.g., *Paradise Biryani, Shah Ghouse, Mehfil, Chutneys, Irani Cafe*).
+- Customer orders track and partition items by their preparation source, acting as a unified middleman aggregator.
+
+### 📖 2. Interactive Floating "Menu Book"
+- Triggered directly from the navigation bar.
+- Displays a clean, text-based, print-style restaurant menu layout grouped by culinary categories (*Biryanis, Tiffins, Breads, Combos, Beverages, Desserts, Curries*).
+- Interactive quantity controllers (`+ Add` and `- Qty +`) let users configure their cart straight from the menu book modal.
+
+### 🔢 3. Page-by-Page Menu Pagination
+- The landing page features a paginated food grid limited to **6 items per page** for fast loading and clean layout.
+- Integrates smooth, responsive page controllers with automatic scroll-to-top transition.
+
+### 📋 4. Secure Customer Checkout
+- Structured delivery capture during checkout collecting:
+  - **Full Customer Name**
+  - **Phone Number**
+  - **Delivery Address**
+  - **Payment Mode** (Cash on Delivery)
+
+### 🚚 5. Live Order Dispatch Dashboard (Admin Panel)
+- **Role-Based Views:** Administrative panels feature dynamic headings and tailored layout controls depending on the authenticated account's permissions:
+  - **Super Admin Dashboard** (for account `srinidhijena@gmail.com`)
+  - **Developer Admin Panel**
+  - **Menu Editor Panel**
+- **Zomato/Swiggy-style Delivery Pipeline:** An interactive progress visualizer tracking delivery status from `Received` ➔ `Kitchen Cooking` ➔ `Out for Delivery` ➔ `Delivered` in real-time.
+- **🖨️ Invoice Generator:** Instant print-ready invoice formatting containing order details, restaurant sources, and customer shipping logs.
+
+---
+
+## 📁 Project Directory Structure
+
+```text
 food_delivery/
-├── server.js              ← Express app entry point
-├── .env                   ← Environment variables (you must configure this)
-├── .env.example           ← Template for .env
-├── package.json
+├── src/
+│   ├── pages/
+│   │   ├── index.astro        ← Marketplace Home, Food Grid, Menu Book
+│   │   ├── admin.astro        ← Admin Dashboard, Live Pipeline, Invoice Printer
+│   │   ├── login.astro        ← Account Authentication Login Form
+│   │   ├── signup.astro       ← Account Authentication Registration Form
+│   │   ├── cart.astro         ← Interactive Shopping Cart
+│   │   ├── checkout.astro     ← Delivery Address and Contact Checkout Form
+│   │   ├── orders.astro       ← Customer Real-time Order Tracking
+│   │   └── edit-menu.astro    ← Deprecated route (redirects to admin)
+│   │
+│   ├── components/
+│   │   ├── Header.astro       ← Main Navigation Header with cart quantity counter
+│   │   └── Footer.astro       ← Extended Footer (features, quick links, contact)
+│   │
+│   ├── scripts/
+│   │   └── firebaseApp.js     ← Firestore and Firebase Auth configuration
+│   │
+│   └── styles/
+│       └── globals.css        ← Color tokens, typography, and utility classes
 │
-├── config/
-│   ├── db.js              ← MongoDB connection
-│   └── seeder.js          ← Auto-seeds food items + developer user on startup
-│
-├── models/
-│   ├── User.js            ← User schema (bcrypt password hashing)
-│   ├── Food.js            ← Food item schema
-│   └── Order.js           ← Order schema
-│
-├── controllers/
-│   ├── authController.js  ← Signup & Login logic
-│   ├── foodController.js  ← Add / Get food items
-│   └── orderController.js ← Place & View orders
-│
-├── routes/
-│   ├── authRoutes.js      ← /api/auth/signup, /api/auth/login
-│   ├── foodRoutes.js      ← /api/foods
-│   └── orderRoutes.js     ← /api/orders
-│
-├── middleware/
-│   └── authMiddleware.js  ← JWT token verification
-│
-└── (Frontend HTML pages)
-    ├── index.html         ← Home + Food Carousel + Menu
-    ├── login.html         ← Login form
-    ├── signup.html        ← Registration form
-    ├── cart.html          ← Shopping cart
-    ├── checkout.html      ← Checkout + Place Order
-    └── orders.html        ← Order history
+├── public/
+│   └── images/                ← Product mockups and seeded imagery
+├── firebase.json              ← Firebase Hosting configurations
+├── firestore.rules            ← Role-based Firestore security rules
+└── firestore.indexes.json     ← Firestore composite queries configuration
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## ⚙️ Local Setup and Installation
 
-Make sure you have the following installed:
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) (v18.0.0 or higher) installed.
 
-- **Node.js** v16 or higher → [Download](https://nodejs.org/)
-- **MongoDB** → Either:
-  - Local: [Download MongoDB Community](https://www.mongodb.com/try/download/community)
-  - Cloud: [MongoDB Atlas (Free)](https://www.mongodb.com/atlas)
-
----
-
-## 🚀 How to Run
-
-### Step 1 — Clone / Navigate to the Project
-
+### Step 1: Clone and Navigate
 ```bash
 cd food_delivery
 ```
 
-### Step 2 — Install Dependencies
-
+### Step 2: Install Dependencies
 ```bash
 npm install
 ```
 
-### Step 3 — Configure Environment Variables
-
-Open the `.env` file and update the MongoDB URI:
-
+### Step 3: Configure Environment
+Create a `.env` file in the root directory (or update the config in `src/scripts/firebaseApp.js`) with your Firebase Project coordinates:
 ```env
-PORT=3000
-MONGO_URI=mongodb://127.0.0.1:27017/foodexpress
-JWT_SECRET=supersecretkey_foodexpress_jwt_token_2026
+PUBLIC_FIREBASE_API_KEY=your_api_key
+PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-> **MongoDB Atlas users:** Replace `MONGO_URI` with your Atlas connection string:
-> ```
-> MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/foodexpress?retryWrites=true&w=majority
-> ```
-
-### Step 4 — Start the Server
-
+### Step 4: Run Development Server
 ```bash
-node server.js
+npm run dev
 ```
-
-You should see:
-
-```
-🚀 Server is running on http://localhost:3000
-🔌 MongoDB Connected: 127.0.0.1
-🌱 Food collection empty. Seeding default items...
-✅ Seeded default food items.
-🌱 Developer account missing. Seeding dev@foodexpress.com...
-✅ Seeded developer account.
-```
-
-### Step 5 — Open in Browser
-
-Go to: **http://localhost:3000**
+Open **[http://localhost:4321](http://localhost:4321)** in your browser to view the application locally.
 
 ---
 
-## 👤 Developer Account
+## 🛡️ Firestore Security Configuration
+Security rules in `firestore.rules` protect the marketplace records:
+* **Foods Collection:** Read is public. Write operations (Create, Update, Delete) are authorized only for editors verified against the `/editors` collection.
+* **Orders Collection:** Read is public (for order tracking page lookup). Create is allowed for any authenticated user. Write/update is restricted to authorized administrative users.
 
-A developer account is automatically seeded on the first run:
-
-| Field    | Value                    |
-|----------|--------------------------|
-| Email    | `dev@foodexpress.com`    |
-| Password | `dev@123`                |
-
-You can use this to log in immediately without signing up.
-
----
-
-## 🌐 REST API Endpoints
-
-| Method | Endpoint                | Auth Required | Description              |
-|--------|-------------------------|---------------|--------------------------|
-| POST   | `/api/auth/signup`      | No            | Register a new user      |
-| POST   | `/api/auth/login`       | No            | Login and get JWT token  |
-| GET    | `/api/foods`            | No            | Get all food items       |
-| GET    | `/api/foods/:id`        | No            | Get food item by ID      |
-| POST   | `/api/foods/add`        | Yes (JWT)     | Add a new food item      |
-| POST   | `/api/orders/place`     | Yes (JWT)     | Place a new order        |
-| GET    | `/api/orders/my-orders` | Yes (JWT)     | Get logged-in user orders|
-
-### Example: Login
-
+To deploy security rules:
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"dev@foodexpress.com","password":"dev@123"}'
+firebase deploy --only firestore:rules
 ```
 
 ---
 
-## 🛒 How to Use the App
+## 🚀 Building & Deploying
 
-1. **Home Page** → Browse the food carousel and dynamic menu
-2. **Login/Signup** → Create an account or use `dev@foodexpress.com` / `dev@123`
-3. **Add to Cart** → Click "Add to Cart" on any food item
-4. **Cart** → Review items, adjust quantities
-5. **Checkout** → Enter delivery address and payment method → Place Order
-6. **My Orders** → View order history (accessible after login)
-
----
-
-## 🧪 Run Integration Tests (Optional)
-
-To run the mock-based integration test suite (no real DB needed):
-
+### Build Production Bundle
+To compile a static production build:
 ```bash
-node run_mock_verification.js
+npm run build
+```
+
+### Deploy to Firebase Hosting
+```bash
+firebase deploy --only hosting
 ```
 
 ---
 
-## 🛠️ Tech Stack
-
-| Layer      | Technology               |
-|------------|--------------------------|
-| Backend    | Node.js + Express.js     |
-| Database   | MongoDB + Mongoose ODM   |
-| Auth       | JWT + bcryptjs           |
-| Frontend   | HTML + CSS + Vanilla JS  |
-
----
-
-## 📌 Notes
-
-- Passwords are **always hashed** using bcrypt before storing in the database.
-- JWT tokens are stored in `localStorage` on the client side.
-- The cart is managed entirely in the browser using `localStorage`.
-- On the first server start, the database is **automatically seeded** with food items and the developer account.
+## 🛠️ Technology Stack
+- **Frontend Framework:** [Astro](https://astro.build/) (Static Site Generation / Islands Architecture)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styles:** Vanilla CSS (Custom custom tokens, glassmorphism, responsive breakpoints)
+- **Database & Auth:** [Firebase Firestore / Authentication](https://firebase.google.com/)
+- **Hosting:** [Firebase Hosting](https://firebase.google.com/docs/hosting)

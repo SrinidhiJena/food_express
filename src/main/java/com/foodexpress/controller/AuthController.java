@@ -50,6 +50,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
+        // Domain validation: enforce @gmail.com except for dev@example.com
+        String emailToCheck = request.getEmail().trim().toLowerCase();
+        if (!emailToCheck.equals("dev@example.com") && !emailToCheck.endsWith("@gmail.com")) {
+            response.put("success", false);
+            response.put("message", "Only Gmail addresses (@gmail.com) are allowed to register.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
         // Password length check
         if (request.getPassword().length() < 6) {
             response.put("success", false);

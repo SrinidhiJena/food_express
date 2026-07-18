@@ -1,0 +1,1030 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="FoodExpress — Popular Dishes & Tiffins">
+    <!-- ===== HERO / CAROUSEL ===== -->
+    <section class="hero-carousel" id="carousel-section">
+        <!-- Hero Slides -->
+        <div class="hero-slide active">
+            <img src="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=1200&q=80" alt="Chicken Biryani">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge">👑 Royal Taste</div>
+                <h1>Chicken Biryani</h1>
+                <p class="hero-sub">Aromatic basmati rice cooked with tender chicken, saffron, and traditional spices.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=1200&q=80" alt="Masala Dosa">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge">🥞 Morning Delight</div>
+                <h1>South Indian Masala Dosa</h1>
+                <p class="hero-sub">Crispy rice crepe filled with spiced potato mash, served with coconut chutney and sambar.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="images/chai_bun_combo.png" alt="Irani Chai & Bun Maska Combo">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge">☕ Irani Cafe Pair</div>
+                <h1>Chai &amp; Bun Maska Combo</h1>
+                <p class="hero-sub">Classic pairing of hot Irani Chai and butter-loaded Bun Maska. [Discount: 15% Off]</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="images/biryani_combo.png" alt="Biryani & Thums Up Combo">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="hero-badge">🔥 Perfect Feast</div>
+                <h1>Biryani &amp; Thums Up Combo</h1>
+                <p class="hero-sub">Spicy Chicken Biryani served with a chilled, fizzy bottle of Thums Up. [Discount: 5% Off]</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <button id="prev-btn" class="carousel-arrow arrow-left" aria-label="Previous Slide">&#8249;</button>
+        <button id="next-btn" class="carousel-arrow arrow-right" aria-label="Next Slide">&#8250;</button>
+        
+        <div class="carousel-dots-container">
+            <div class="carousel-dots">
+                <button class="carousel-dot active"></button>
+                <button class="carousel-dot"></button>
+                <button class="carousel-dot"></button>
+                <button class="carousel-dot"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MENU BOOK MODAL (floating text menu) ===== -->
+    <div id="menu-book-overlay" class="menu-book-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Restaurant Menu">
+        <div class="menu-book">
+            <div class="menu-book-header">
+                <div class="menu-book-logo">🌿 FoodExpress</div>
+                <p class="menu-book-tagline">Handcrafted with love • Hyderabad's finest</p>
+                <button id="close-menu-book" class="menu-book-close" aria-label="Close menu">&times;</button>
+            </div>
+            <div class="menu-book-divider-top"></div>
+            <div class="menu-book-body" id="menu-book-body">
+                <div class="menu-book-loading">Loading menu…</div>
+            </div>
+            <div class="menu-book-footer">All prices inclusive of taxes &bull; Minimum order ₹99</div>
+        </div>
+    </div>
+
+    <!-- ===== MENU ===== -->
+    <section id="menu" class="section-wrap" style="background: #FAF9F5; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="section-head">
+            <p class="section-label">Fresh &amp; Hot</p>
+            <h2>Popular Dishes &amp; Tiffins</h2>
+            <p>Handcrafted with the finest ingredients, delivered hot to your doorstep.</p>
+        </div>
+
+        <!-- E-commerce Controls (Amazon/Flipkart Style) -->
+        <div class="menu-controls-wrapper">
+            <!-- Category Filter Pills -->
+            <div class="category-pills" id="category-pills">
+                <button class="pill-btn active" data-category="ALL">🍽️ All Items</button>
+                <button class="pill-btn" data-category="Tiffin">🥞 Tiffins</button>
+                <button class="pill-btn" data-category="Biryani">🍛 Biryanis</button>
+                <button class="pill-btn" data-category="Haleem">🥘 Haleem</button>
+                <button class="pill-btn" data-category="Curry">🍲 Curries</button>
+                <button class="pill-btn" data-category="Starter">🍢 Starters</button>
+                <button class="pill-btn" data-category="Dessert">🍮 Desserts</button>
+                <button class="pill-btn" data-category="Combos">🎁 Combos</button>
+                <button class="pill-btn" data-category="Breads">🍞 Breads</button>
+                <button class="pill-btn" data-category="Beverages (Hot)">☕ Beverages (Hot)</button>
+                <button class="pill-btn" data-category="Beverages (Cold)">🥤 Beverages (Cold)</button>
+                <button class="pill-btn" data-category="Meals">🍱 Meals</button>
+            </div>
+
+            <!-- Sort, Size, and Stats Bar -->
+            <div class="controls-bar">
+                <div class="controls-left" style="display:flex; align-items:center; gap:1rem; flex:1; min-width: 280px; width: 100%;">
+                    <!-- Search input -->
+                    <div style="position:relative; flex:1; max-width:280px; width: 100%;">
+                        <input type="text" id="search-food" class="control-select" placeholder="🔍 Search menu..." style="width:100%; padding-left:1rem; padding-right:1rem; background-image:none;">
+                    </div>
+                    <span class="results-stats" id="results-stats">Showing 0-0 of 0 dishes</span>
+                </div>
+                <div class="controls-right">
+                    <!-- Sort Selection -->
+                    <div class="control-group">
+                        <label for="sort-by">Sort:</label>
+                        <select id="sort-by" class="control-select">
+                            <option value="default" selected>Popularity</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name-asc">Alphabetical (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <!-- Items per page -->
+                    <div class="control-group">
+                        <label for="items-per-page">Show:</label>
+                        <select id="items-per-page" class="control-select">
+                            <option value="4">4 per page</option>
+                            <option value="8" selected>8 per page</option>
+                            <option value="12">12 per page</option>
+                            <option value="all">Show All</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="food-list" class="food-grid">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading menu…</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="menu-pagination" class="menu-pagination" style="display:none;"></div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section id="about" class="about-section section-wrap" style="background: #ffffff; border-bottom: 1px solid var(--border);">
+        <div class="section-head">
+            <p class="section-label">Our Story</p>
+            <h2>Why Choose FoodExpress?</h2>
+            <p>We believe great food brings people together. Sourced locally, cooked daily.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">🌿</div>
+                <h4>Fresh Ingredients</h4>
+                <p>Sourced locally, cooked daily</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h4>Fast Delivery</h4>
+                <p>Hot food in under 30 mins</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🍽️</div>
+                <h4>Quality Meals</h4>
+                <p>Chef-crafted every time</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Floating Food Detail Modal -->
+    <div id="food-detail-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="detail-title">Food Details</h3>
+                <button id="close-detail-modal" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="detail-img-wrap">
+                <img id="detail-img" src="" alt="" onerror="this.src='images/pizza.jpg'">
+            </div>
+            <div class="detail-body">
+                <span id="detail-category" class="category-badge">Category</span>
+                <p id="detail-description" style="margin-top: 1rem; line-height: 1.6; color: var(--text-2);"></p>
+                <div class="detail-meta">
+                    <span id="detail-price" class="price">₹0.00</span>
+                    <button id="detail-add-btn" class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<style is:global>
+/* ===== MENU BOOK MODAL ===== */
+.menu-book-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(10,10,20,0.82);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: mbFadeIn 0.25s ease;
+}
+@keyframes mbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.menu-book {
+  background: #fffdf7;
+  color: #1a1208;
+  width: min(680px, 100%);
+  max-height: 88vh;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.55), inset 0 0 0 1px #d4b87a;
+  overflow: hidden;
+  animation: mbSlideUp 0.28s cubic-bezier(0.22,1,0.36,1);
+  position: relative;
+}
+@keyframes mbSlideUp {
+  from { transform: translateY(28px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.menu-book-header {
+  text-align: center;
+  padding: 1.6rem 3rem 1rem;
+  position: relative;
+  background: linear-gradient(to bottom, #2d1a02, #3d2408);
+  color: #f5dfa0;
+  flex-shrink: 0;
+}
+.menu-book-logo {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.menu-book-tagline {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  margin-top: 0.2rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+.menu-book-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: #f5dfa0;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.menu-book-close:hover { opacity: 1; }
+.menu-book-divider-top {
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #c8952a, transparent);
+  flex-shrink: 0;
+}
+.menu-book-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2.5rem;
+  scroll-behavior: smooth;
+}
+.menu-book-body::-webkit-scrollbar { width: 5px; }
+.menu-book-body::-webkit-scrollbar-thumb { background: #c8952a55; border-radius: 99px; }
+.menu-book-loading {
+  text-align: center;
+  padding: 3rem;
+  opacity: 0.5;
+  font-style: italic;
+}
+.mb-section {
+  margin-bottom: 2rem;
+}
+.mb-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #a06b18;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.mb-section-title::before,
+.mb-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c8952a55);
+}
+.mb-section-title::after {
+  background: linear-gradient(270deg, transparent, #c8952a55);
+}
+.mb-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dotted #d9c49055;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 2px;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+.mb-item:last-child { border-bottom: none; }
+.mb-item:hover { background: #f5e8c822; }
+.mb-item-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1a1208;
+  flex: 1;
+}
+.mb-item-desc {
+  font-size: 0.75rem;
+  color: #8a6d3b;
+  margin-top: 0.1rem;
+  font-style: italic;
+}
+.mb-item-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.mb-item-price {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #2d1a02;
+  font-family: 'Georgia', serif;
+}
+.mb-add-hint {
+  font-size: 0.65rem;
+  color: #c8952a;
+  margin-top: 0.1rem;
+  opacity: 0.8;
+}
+.menu-book-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #8a6d3b;
+  padding: 0.8rem 1.5rem;
+  border-top: 1px solid #e8d5a055;
+  background: #fdf8ee;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+/* ===== PAGINATION ===== */
+.menu-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+.pg-btn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #333);
+  background: var(--bg-card, #1a1a2e);
+  color: var(--text-2, #aaa);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.6rem;
+}
+.pg-btn:hover { border-color: var(--primary, #4ade80); color: var(--primary, #4ade80); }
+.pg-btn.active {
+  background: var(--primary, #4ade80);
+  color: #000;
+  border-color: var(--primary, #4ade80);
+  transform: scale(1.08);
+}
+.pg-btn.pg-prev, .pg-btn.pg-next {
+  font-size: 1.1rem;
+  color: var(--text-2);
+}
+/* ===== E-COMMERCE MENU CONTROLS ===== */
+.menu-controls-wrapper {
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0;
+}
+.category-pills {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(160, 200, 120, 0.2) transparent;
+}
+.category-pills::-webkit-scrollbar {
+  height: 4px;
+}
+.category-pills::-webkit-scrollbar-thumb {
+  background: rgba(160, 200, 120, 0.2);
+  border-radius: 99px;
+}
+.pill-btn {
+  background: var(--bg-card, #1a1a2e);
+  border: 1.5px solid var(--border, #333);
+  color: var(--text-2, #aaa);
+  padding: 0.5rem 1.25rem;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pill-btn:hover {
+  border-color: var(--primary, #4ade80);
+  color: var(--primary, #4ade80);
+}
+.pill-btn.active {
+  background: var(--primary, #4ade80);
+  color: #000;
+  border-color: var(--primary, #4ade80);
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.2);
+}
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card, #1a1a2e);
+  border: 1px solid var(--border, #333);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.results-stats {
+  font-size: 0.88rem;
+  color: var(--text-2, #aaa);
+  font-weight: 600;
+}
+.controls-right {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.control-group label {
+  font-size: 0.85rem;
+  color: var(--text-2, #aaa);
+  font-weight: 600;
+}
+.control-select {
+  background: var(--bg-2, #0d0d1e);
+  border: 1.5px solid var(--border, #333);
+  color: var(--text, #fff);
+  padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.85rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.control-select:focus {
+  border-color: var(--primary, #4ade80);
+}
+@media (max-width: 600px) {
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .controls-right {
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+}
+@media(max-width:520px) {
+  .menu-book-body { padding: 1rem 1.2rem; }
+  .menu-book-header { padding: 1.2rem 2.5rem 0.8rem; }
+}
+
+/* ===== MENU BOOK QUANTITY CONTROLS ===== */
+.mb-add-btn {
+  background: #2d1a02;
+  color: #f5dfa0;
+  border: 1px solid #c8952a;
+  border-radius: 6px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+  box-sizing: border-box;
+}
+.mb-add-btn:hover {
+  background: #c8952a;
+  color: #2d1a02;
+  transform: translateY(-1px);
+}
+.mb-qty-pill {
+  display: flex;
+  align-items: center;
+  background: #fdf8ee;
+  border: 1px solid #d4b87a;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 28px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+}
+.mb-qty-btn {
+  background: none;
+  border: none;
+  width: 26px;
+  height: 100%;
+  color: #2d1a02;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.mb-qty-btn:hover {
+  background: #f5e8c8;
+}
+.mb-qty-num {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2d1a02;
+  min-width: 20px;
+  text-align: center;
+}
+</style>
+
+<script>
+  import { db } from '../scripts/firebaseApp.js';
+  import { collection, onSnapshot } from 'firebase/firestore';
+
+  let loadedFoods: any[] = [];
+  let searchQuery = "";
+
+  // --- CAROUSEL LOGIC ---
+  const slides = [...document.querySelectorAll(".hero-slide")];
+  const dots   = [...document.querySelectorAll(".carousel-dot")];
+  let cur = 0;
+  let timer;
+
+  const show = (idx) => {
+    if (!slides.length) return;
+    slides[cur].classList.remove("active");
+    dots[cur]?.classList.remove("active");
+    cur = (idx + slides.length) % slides.length;
+    slides[cur].classList.add("active");
+    dots[cur]?.classList.add("active");
+  };
+
+  const play = () => {
+    clearInterval(timer);
+    timer = setInterval(() => show(cur + 1), 5000);
+  };
+
+  document.getElementById("prev-btn")?.addEventListener("click", () => { show(cur - 1); play(); });
+  document.getElementById("next-btn")?.addEventListener("click", () => { show(cur + 1); play(); });
+  dots.forEach((d, i) => d.addEventListener("click", () => { show(i); play(); }));
+  
+  if (slides.length) {
+    show(0);
+    play();
+  }
+
+  const esc = (s) => !s ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+
+  function toast(msg, type="success") {
+    document.getElementById("app-toast")?.remove();
+    const t = document.createElement("div");
+    t.id = "app-toast";
+    t.className = `app-toast toast-${type}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => {
+      t.classList.remove("show");
+      setTimeout(() => t.remove(), 400);
+    }, 3000);
+  }
+
+  // Add to Cart helper (attached globally to window for onclick in rendered html)
+  window.addToCart = (foodId, foodName, price, restaurant) => {
+    const getCart = () => {
+      try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch { return []; }
+    };
+    const cart = getCart();
+    const existing = cart.find(item => item.foodId === foodId);
+    if (existing) {
+      existing.quantity++;
+    } else {
+      cart.push({ foodId, foodName, price: Number(price), quantity: 1, restaurant: restaurant || 'FoodExpress Special' });
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    
+    // Dispatch custom event to notify Header
+    window.dispatchEvent(new Event('cart-updated'));
+    toast(`🛒 ${foodName} added!`);
+  };
+
+  let currentPage = 1;
+  let selectedCategory = "ALL";
+  let sortBy = "default";
+  let pageSize = 8; // Default value matching HTML select default
+
+  function getProcessedFoods() {
+    let list = [...loadedFoods];
+    
+    // 1. Filter by category
+    if (selectedCategory !== "ALL") {
+      list = list.filter(f => (f.category || "").trim().toLowerCase() === selectedCategory.trim().toLowerCase());
+    }
+
+    // 2. Filter by search query (Flipkart/Amazon style)
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(f => 
+        (f.foodName || "").toLowerCase().includes(q) || 
+        (f.description || "").toLowerCase().includes(q) ||
+        (f.category || "").toLowerCase().includes(q)
+      );
+    }
+
+    // 3. Sort by choice
+    if (sortBy === "price-low") {
+      list.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === "price-high") {
+      list.sort((a, b) => Number(b.price) - Number(a.price));
+    } else if (sortBy === "name-asc") {
+      list.sort((a, b) => (a.foodName || "").localeCompare(b.foodName || ""));
+    }
+
+    return list;
+  }
+
+  function renderPage(page: number) {
+    const box = document.getElementById("food-list");
+    const pgBar = document.getElementById("menu-pagination");
+    const statsEl = document.getElementById("results-stats");
+    if (!box) return;
+
+    const processed = getProcessedFoods();
+    const total = processed.length;
+
+    // Handle "Show All" (-1) size option
+    const size = pageSize === -1 ? total : pageSize;
+    const totalPages = size > 0 ? Math.ceil(total / size) : 1;
+    
+    currentPage = Math.max(1, Math.min(page, totalPages));
+    const start = (currentPage - 1) * size;
+    const end = Math.min(start + size, total);
+    const slice = processed.slice(start, end);
+
+    // Update dynamic statistics text (Amazon/Flipkart style)
+    if (statsEl) {
+      if (total === 0) {
+        statsEl.textContent = "Showing 0 of 0 dishes";
+      } else {
+        statsEl.textContent = `Showing ${start + 1}–${end} of ${total} dishes`;
+      }
+    }
+
+    box.innerHTML = "";
+    if (total === 0) {
+      box.innerHTML = `<div class="state-msg error" style="margin: 2rem auto;">No items found matching the selected category.</div>`;
+      if (pgBar) pgBar.style.display = "none";
+      return;
+    }
+
+    slice.forEach(f => {
+      const c = document.createElement("div");
+      c.className = "food-card";
+      c.innerHTML = `
+        <div class="food-card__img" onclick="openDetailModal('${f.id}')" style="cursor:pointer;">
+          <img src="${esc(f.image || 'images/pizza.jpg')}" alt="${esc(f.foodName)}" loading="lazy" onerror="this.src='images/pizza.jpg'">
+          <span class="category-badge">${esc(f.category)}</span>
+        </div>
+        <div class="food-card__body" onclick="openDetailModal('${f.id}')" style="cursor:pointer;">
+          <div style="font-size:0.75rem; color:var(--primary); font-weight:700; margin-bottom:0.25rem;">👨‍🍳 ${esc(f.restaurant || 'FoodExpress Special')}</div>
+          <h3>${esc(f.foodName)}</h3>
+          <p>${esc(f.description)}</p>
+        </div>
+        <div class="food-card__footer">
+          <span class="price">₹${Number(f.price).toFixed(2)}</span>
+          <button class="btn btn-primary btn-sm" onclick="addToCart('${f.id}', '${esc(f.foodName)}', ${f.price}, '${esc(f.restaurant || 'FoodExpress Special')}')">+ Add</button>
+        </div>`;
+      box.appendChild(c);
+    });
+
+    // Build pagination bar
+    if (pgBar) {
+      if (totalPages <= 1) { pgBar.style.display = "none"; return; }
+      pgBar.style.display = "flex";
+      pgBar.innerHTML = "";
+
+      const addBtn = (label: string, pg: number, cls = "", disabled = false) => {
+        const b = document.createElement("button");
+        b.className = `pg-btn ${cls}`.trim();
+        b.textContent = label;
+        b.disabled = disabled;
+        if (!disabled) b.addEventListener("click", () => { renderPage(pg); document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" }); });
+        pgBar.appendChild(b);
+      };
+
+      addBtn("‹", currentPage - 1, "pg-prev", currentPage === 1);
+      for (let i = 1; i <= totalPages; i++) {
+        addBtn(String(i), i, i === currentPage ? "active" : "");
+      }
+      addBtn("›", currentPage + 1, "pg-next", currentPage === totalPages);
+    }
+  }
+
+  function setupFilters() {
+    const pills = document.querySelectorAll("#category-pills .pill-btn");
+    pills.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        pills.forEach(p => p.classList.remove("active"));
+        const target = e.currentTarget as HTMLButtonElement;
+        target.classList.add("active");
+        selectedCategory = target.getAttribute("data-category") || "ALL";
+        renderPage(1);
+      });
+    });
+
+    // Search input change listener
+    const searchInp = document.getElementById("search-food") as HTMLInputElement;
+    searchInp?.addEventListener("input", () => {
+      searchQuery = searchInp.value;
+      renderPage(1);
+    });
+
+    // Sort selection change listener
+    const sortSelect = document.getElementById("sort-by") as HTMLSelectElement;
+    sortSelect?.addEventListener("change", () => {
+      sortBy = sortSelect.value;
+      renderPage(1);
+    });
+
+    // Items per page change listener
+    const sizeSelect = document.getElementById("items-per-page") as HTMLSelectElement;
+    sizeSelect?.addEventListener("change", () => {
+      const val = sizeSelect.value;
+      pageSize = val === "all" ? -1 : Number(val);
+      renderPage(1);
+    });
+  }
+
+  function loadMenu() {
+    const box = document.getElementById("food-list");
+    if (!box) return;
+    
+    // Set up real-time listener to automatically update cards and images on database mutations
+    onSnapshot(collection(db, "foods"), (snap) => {
+      if (snap.empty) {
+        box.innerHTML = `<div class="state-msg">No delicious items available today. Please check back later!</div>`;
+        return;
+      }
+      loadedFoods = [];
+      snap.forEach(docSnap => {
+        loadedFoods.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      // Re-render the current page to preserve user pagination state
+      renderPage(currentPage);
+      buildMenuBook();
+    }, (err) => {
+      console.error("Firestore onSnapshot subscription failed:", err);
+      box.innerHTML = `<div class="state-msg error">⚠️ Cannot load menu: ${err.message || err}<br><small style="opacity: 0.6;">Check your browser console and Firestore database rules.</small></div>`;
+    });
+  }
+
+  // ===== MENU BOOK =====
+  const CATEGORY_ICONS: Record<string,string> = {
+    "Tiffin": "🥞",
+    "Biryani": "🍛",
+    "Haleem": "🥘",
+    "Curry": "🍲",
+    "Starter": "🍢",
+    "Dessert": "🍮",
+    "Combos": "🎁",
+    "Breads": "🍞",
+    "Beverages (Hot)": "☕",
+    "Beverages (Cold)": "🥤",
+    "Meals": "🍱"
+  };
+
+  function updateCartQuantity(foodId: string, delta: number) {
+    try {
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const idx = cart.findIndex((item: any) => item.foodId === foodId);
+      if (idx !== -1) {
+        cart[idx].quantity += delta;
+        if (cart[idx].quantity <= 0) {
+          cart.splice(idx, 1);
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event('cart-updated'));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function buildMenuBook() {
+    const body = document.getElementById("menu-book-body");
+    if (!body) return;
+
+    if (!loadedFoods.length) {
+      body.innerHTML = `<div class="menu-book-loading">No delicious items available today.</div>`;
+      return;
+    }
+
+    // Read cart contents for live quantity synchronization
+    let cart: any[] = [];
+    try {
+      cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch (e) {
+      cart = [];
+    }
+
+    // Group foods by category
+    const groups: Record<string, any[]> = {};
+    loadedFoods.forEach(f => {
+      const cat = f.category || "Other";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(f);
+    });
+
+    body.innerHTML = "";
+    Object.entries(groups).forEach(([cat, items]) => {
+      const icon = CATEGORY_ICONS[cat] || "🍽️";
+      const sec = document.createElement("div");
+      sec.className = "mb-section";
+      
+      // Pluralize labels nicely
+      const label = cat.endsWith("s") ? cat : `${cat}s`;
+      sec.innerHTML = `<div class="mb-section-title">${icon} ${label}</div>`;
+
+      items.forEach(f => {
+        const cartItem = cart.find((item: any) => item.foodId === f.id);
+        const qty = cartItem ? cartItem.quantity : 0;
+
+        const row = document.createElement("div");
+        row.className = "mb-item";
+
+        // Left side description
+        const left = document.createElement("div");
+        left.style.flex = "1";
+        left.style.cursor = "pointer";
+        left.innerHTML = `
+          <div class="mb-item-name">${esc(f.foodName)}</div>
+          <div class="mb-item-desc">${esc((f.description || "").slice(0, 75))}…</div>
+        `;
+        left.addEventListener("click", () => {
+          closeMenuBook();
+          document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" });
+          setTimeout(() => openDetailModal(f.id), 350);
+        });
+        row.appendChild(left);
+
+        // Right side price & add control pill
+        const right = document.createElement("div");
+        right.className = "mb-item-right";
+        right.style.display = "flex";
+        right.style.alignItems = "center";
+        right.style.gap = "0.75rem";
+
+        const priceSpan = document.createElement("span");
+        priceSpan.className = "mb-item-price";
+        priceSpan.textContent = `₹${Number(f.price).toFixed(0)}`;
+        right.appendChild(priceSpan);
+
+        const ctrl = document.createElement("div");
+        ctrl.className = "mb-item-ctrl";
+        if (qty === 0) {
+          ctrl.innerHTML = `<button class="mb-add-btn">+ Add</button>`;
+          ctrl.querySelector(".mb-add-btn")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            addToCart(f.id, f.foodName, f.price);
+          });
+        } else {
+          ctrl.innerHTML = `
+            <div class="mb-qty-pill">
+              <button class="mb-qty-btn dec-btn" aria-label="Decrease">&minus;</button>
+              <span class="mb-qty-num">${qty}</span>
+              <button class="mb-qty-btn inc-btn" aria-label="Increase">+</button>
+            </div>
+          `;
+          ctrl.querySelector(".dec-btn")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            updateCartQuantity(f.id, -1);
+          });
+          ctrl.querySelector(".inc-btn")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            addToCart(f.id, f.foodName, f.price, f.restaurant || 'FoodExpress Special');
+          });
+        }
+        right.appendChild(ctrl);
+        row.appendChild(right);
+        sec.appendChild(row);
+      });
+
+      body.appendChild(sec);
+    });
+  }
+
+  // Live synchronizer: redraw menu book items when cart changes elsewhere
+  window.addEventListener("cart-updated", buildMenuBook);
+
+  function openMenuBook() {
+    const ov = document.getElementById("menu-book-overlay");
+    if (ov) ov.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+  function closeMenuBook() {
+    const ov = document.getElementById("menu-book-overlay");
+    if (ov) ov.style.display = "none";
+    document.body.style.overflow = "";
+  }
+  (window as any).openMenuBook = openMenuBook;
+  (window as any).closeMenuBook = closeMenuBook;
+
+  document.getElementById("close-menu-book")?.addEventListener("click", closeMenuBook);
+  document.getElementById("menu-book-overlay")?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeMenuBook();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenuBook(); });
+
+
+
+  function openDetailModal(id: string) {
+    const f = loadedFoods.find(item => item.id === id);
+    if (!f) return;
+    const titleEl = document.getElementById("detail-title");
+    const imgEl = document.getElementById("detail-img");
+    const catEl = document.getElementById("detail-category");
+    const descEl = document.getElementById("detail-description");
+    const priceEl = document.getElementById("detail-price");
+    
+    if (titleEl) titleEl.textContent = f.foodName;
+    if (imgEl) {
+      imgEl.setAttribute("src", f.image || 'images/pizza.jpg');
+      imgEl.setAttribute("alt", f.foodName);
+    }
+    if (catEl) catEl.textContent = f.category;
+    if (descEl) descEl.textContent = f.description;
+    if (priceEl) priceEl.textContent = `₹${Number(f.price).toFixed(2)}`;
+    
+    const addBtn = document.getElementById("detail-add-btn");
+    if (addBtn) {
+      addBtn.onclick = () => {
+        addToCart(f.id, f.foodName, f.price, f.restaurant || 'FoodExpress Special');
+        closeDetailModal();
+      };
+    }
+    
+    const modal = document.getElementById("food-detail-modal");
+    if (modal) modal.style.display = "flex";
+  }
+  
+  function closeDetailModal() {
+    const modal = document.getElementById("food-detail-modal");
+    if (modal) modal.style.display = "none";
+  }
+
+  (window as any).openDetailModal = openDetailModal;
+  (window as any).closeDetailModal = closeDetailModal;
+
+  document.getElementById("close-detail-modal")?.addEventListener("click", closeDetailModal);
+  document.getElementById("food-detail-modal")?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeDetailModal();
+  });
+
+  setupFilters();
+  loadMenu();
+</script>

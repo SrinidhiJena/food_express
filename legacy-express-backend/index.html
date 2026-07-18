@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodExpress — Fresh Food Delivered</title>
+<meta name="description" content="Order fresh, delicious food from FoodExpress. Fast delivery, quality meals.">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+    <nav>
+        <h2>🌿 FoodExpress</h2>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="cart.html" class="nav-cart">🛒 Cart</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="guest-link"><a href="login.html">Login</a></li>
+            <li class="guest-link"><a href="signup.html">Sign Up</a></li>
+            <li class="user-link" style="display:none;"><a href="orders.html">My Orders</a></li>
+            <li class="user-link" style="display:none;"><span id="welcome-msg"></span></li>
+            <li class="user-link" style="display:none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">🌱 Fresh &amp; Organic</div>
+        <h1>Delicious Food,<br><em>Delivered Fast</em></h1>
+        <p>From our kitchen to your doorstep — hot, fresh, and always on time.</p>
+        <div class="hero-btns">
+            <button class="btn-primary" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
+            <button class="btn-secondary" onclick="document.getElementById('carousel-section').scrollIntoView({behavior:'smooth'})">See Our Menu ↓</button>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <strong>50+</strong>
+                <span>Menu Items</span>
+            </div>
+            <div class="hero-stat">
+                <strong>30 min</strong>
+                <span>Avg Delivery</span>
+            </div>
+            <div class="hero-stat">
+                <strong>4.8 ⭐</strong>
+                <span>Rating</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CAROUSEL ===== -->
+<section id="carousel-section">
+    <p class="section-label">What's Popular</p>
+    <h2>Today's Favourites</h2>
+    <div id="carousel" class="carousel">
+        <div class="carousel-inner" id="carousel-inner">
+            <div class="carousel-slide">
+                <img src="images/pizza.jpg" alt="Pizza">
+                <div class="slide-label">🍕 Cheesy Veg Pizza — ₹299</div>
+            </div>
+            <div class="carousel-slide">
+                <img src="images/burger.jpg" alt="Burger">
+                <div class="slide-label">🍔 Double Cheese Burger — ₹199</div>
+            </div>
+            <div class="carousel-slide">
+                <img src="images/pasta.jpg" alt="Pasta">
+                <div class="slide-label">🍝 White Sauce Pasta — ₹249</div>
+            </div>
+            <div class="carousel-slide">
+                <img src="images/biryani.jpg" alt="Biryani">
+                <div class="slide-label">🍛 Chicken Biryani — ₹349</div>
+            </div>
+        </div>
+        <button id="prev-btn" class="carousel-btn">&#8249;</button>
+        <button id="next-btn" class="carousel-btn">&#8250;</button>
+    </div>
+    <div class="carousel-dots" id="carousel-dots">
+        <div class="carousel-dot active"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+    </div>
+</section>
+
+<!-- ===== MENU ===== -->
+<section id="menu">
+    <div class="section-header">
+        <p class="section-label">Fresh Every Day</p>
+        <h2>Our Menu</h2>
+        <p>Handcrafted with the freshest ingredients, delivered hot to your door.</p>
+    </div>
+    <div id="food-list" class="food-container">
+        <!-- Dynamically loaded by script.js -->
+    </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+    <h2>Why Choose FoodExpress?</h2>
+    <p>We believe great food brings people together. Fresh ingredients, quality meals and lightning-fast delivery — that's our promise to you.</p>
+    <div class="about-features">
+        <div class="feature-card">
+            <div class="icon">🌿</div>
+            <h4>Fresh Ingredients</h4>
+            <p>Sourced locally, cooked daily</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">⚡</div>
+            <h4>Fast Delivery</h4>
+            <p>Hot food in under 30 mins</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🍽️</div>
+            <h4>Quality Meals</h4>
+            <p>Chef-crafted every time</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">💚</div>
+            <h4>Healthy Options</h4>
+            <p>Nutritious and delicious</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+    <h2>Get in Touch</h2>
+    <p>📧 foodexpress@gmail.com</p>
+    <p>📞 +91 98765 43210</p>
+    <p>📍 Baker's Street, Food City, India</p>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <p>© 2026 <span>FoodExpress</span>. Made with 💚 for good food.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+
+# IDE / Build cache directories
+.astro/
+.firebase/
+.agents/
+.vscode/
+.idea/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+.DS_Store
+Thumbs.db

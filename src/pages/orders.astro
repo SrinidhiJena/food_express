@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Your Orders — FoodExpress">
+    <main class="page-wrap">
+        <h1 class="page-title">Order History</h1>
+        <div id="orders-container">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your orders…</p>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<script>
+  import { auth, db } from '../scripts/firebaseApp.js';
+  import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+  import { onAuthStateChanged } from 'firebase/auth';
+
+  const esc = (s) => !s ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  const container = document.getElementById("orders-container");
+
+  async function loadOrders(user) {
+    if (!container) return;
+    try {
+      const q = query(
+        collection(db, "orders"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+      
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🍽️</div>
+            <h3>No orders yet</h3>
+            <p>Go ahead and place your first delicious order!</p>
+            <a href="/" class="btn btn-primary">Order Now</a>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = "";
+      snap.forEach(docSnap => {
+        const o = docSnap.data();
+        const date = o.createdAt?.toDate?.()?.toLocaleString("en-IN") || "Just now";
+        const card = document.createElement("div");
+        card.className = "order-card";
+        card.innerHTML = `
+          <div class="order-card__head">
+            <span class="order-id">#${docSnap.id.slice(-8).toUpperCase()}</span>
+            <span class="status-badge status-${(o.orderStatus || "pending").toLowerCase().replace(/\s+/g, '-')}">${o.orderStatus}</span>
+          </div>
+          <div class="order-meta">
+            <span>📅 ${date}</span>
+            <span>💳 ${esc(o.paymentMethod)}</span>
+          </div>
+          <p class="order-addr">📍 ${esc(o.address)}</p>
+          <ul class="order-items">
+            ${(o.foodItems || []).map(item => `
+              <li>${esc(item.foodName)} ×${item.quantity} — ₹${(item.price * item.quantity).toFixed(2)}</li>
+            `).join("")}
+          </ul>
+          <div class="order-total">Total: ₹${Number(o.totalPrice).toFixed(2)}</div>`;
+        container.appendChild(card);
+      });
+    } catch(err) {
+      container.innerHTML = `<div class="state-msg error">Failed to load orders. <a href="javascript:location.reload()">Retry</a></div>`;
+    }
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (!container) return;
+    if (!user) {
+      container.innerHTML = `<div class="state-msg">Please <a href="/login">login</a> to view your order history.</div>`;
+      return;
+    }
+    loadOrders(user);
+  });
+</script>

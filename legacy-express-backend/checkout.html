@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — FoodExpress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        <h2>🌿 FoodExpress</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="cart.html" class="nav-cart">🛒 Cart</a></li>
+            <li class="user-link" style="display:none;"><a href="orders.html">My Orders</a></li>
+            <li class="user-link" style="display:none;"><span id="welcome-msg"></span></li>
+            <li class="user-link" style="display:none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="form-page-wrapper">
+<div class="login-container">
+    <div class="logo">🌿 FoodExpress</div>
+    <h3>Complete Your Order</h3>
+    <form id="checkout-form">
+        <textarea placeholder="📍 Delivery Address" rows="3" required></textarea>
+        <select required>
+            <option value="">Select Payment Method</option>
+            <option value="Cash on Delivery">Cash on Delivery</option>
+            <option value="UPI">UPI</option>
+            <option value="Card">Credit / Debit Card</option>
+            <option value="Net Banking">Net Banking</option>
+        </select>
+        <button type="submit">Place Order 🎉</button>
+    </form>
+    <p><a href="cart.html">← Back to Cart</a></p>
+</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

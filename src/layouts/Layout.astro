@@ -1,0 +1,92 @@
+---
+import '../styles/globals.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  hideHeaderFooter?: boolean;
+}
+
+const { title, description = "Order fresh, delicious food from FoodExpress. Fast delivery, quality meals.", hideHeaderFooter = false } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <meta name="description" content={description}>
+</head>
+<body data-hide-nav={hideHeaderFooter ? "true" : "false"}>
+    {!hideHeaderFooter && <Header />}
+    <slot />
+    {!hideHeaderFooter && <Footer />}
+
+    <!-- System Maintenance Overlay -->
+    <div id="maintenance-overlay" style="display:none; position:fixed; inset:0; background:#FAF9F5; z-index:999999; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center; font-family:'Outfit',sans-serif;">
+        <div style="font-size:4.5rem; margin-bottom:1.5rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.05));">🚧</div>
+        <h1 style="font-size:2.2rem; font-weight:800; color:#2C3E2B; margin-bottom:0.5rem; letter-spacing:-1px;">FoodExpress Under Maintenance</h1>
+        <p style="color:#5c685b; max-width:440px; line-height:1.6; margin-bottom:2rem; font-size: 0.95rem;">
+            We are cooking up some improvements and updating our menu. We'll be back shortly to deliver delicious, fresh meals straight to your doorstep!
+        </p>
+        <div style="font-size:0.85rem; color:#8d9a8c; padding: 0.75rem 1.5rem; background: rgba(160,200,120,0.1); border-radius: 99px;">
+            Admin or Team Member? <a href="/login" style="color:var(--primary-2); font-weight:700; text-decoration:underline;">Sign In here</a>
+        </div>
+    </div>
+
+    <script>
+      import { auth, db } from '../scripts/firebaseApp.js';
+      import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+      import { onAuthStateChanged } from 'firebase/auth';
+
+      const checkMaintenance = async () => {
+        const isHideNav = document.body.getAttribute("data-hide-nav") === "true";
+        if (isHideNav) return; 
+
+        try {
+          const configSnap = await getDoc(doc(db, "settings", "config"));
+          if (configSnap.exists() && configSnap.data().maintenanceMode === true) {
+            const overlay = document.getElementById("maintenance-overlay");
+            
+            onAuthStateChanged(auth, async (user) => {
+              let bypass = false;
+              if (user) {
+                if (user.email === "srinidhijena@gmail.com") {
+                  bypass = true;
+                } else {
+                  try {
+                    const editorsSnap = await getDocs(collection(db, "editors"));
+                    editorsSnap.forEach(d => {
+                      if (d.data().email === user.email.toLowerCase()) bypass = true;
+                    });
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+              }
+
+              if (bypass) {
+                if (overlay) overlay.style.display = "none";
+              } else {
+                if (overlay) {
+                  overlay.style.display = "flex";
+                  // Hide main page contents to prevent interaction
+                  document.querySelectorAll("body > *:not(#maintenance-overlay)").forEach(el => {
+                    (el as HTMLElement).style.display = "none";
+                  });
+                }
+              }
+            });
+          }
+        } catch (err) {
+          console.error("Maintenance check failed:", err);
+        }
+      };
+
+      checkMaintenance();
+    </script>
+</body>
+</html>

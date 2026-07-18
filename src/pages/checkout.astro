@@ -1,0 +1,151 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Checkout — FoodExpress">
+    <main class="page-wrap">
+        <h1 class="page-title">Checkout</h1>
+        <div class="checkout-layout">
+            <!-- Left: Delivery Form -->
+            <div class="checkout-form-card">
+                <div class="card-heading">Delivery Details</div>
+                <div id="error-container"></div>
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label for="delivery-name">Full Name</label>
+                        <input type="text" id="delivery-name" class="input" placeholder="e.g. Rahul Sharma" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery-phone">Phone Number</label>
+                        <input type="tel" id="delivery-phone" class="input" placeholder="e.g. +91 9876543210" pattern="^[0-9+\s\-]{10,15}$" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery-address">Delivery Address</label>
+                        <textarea id="delivery-address" class="input" placeholder="Enter your full home or office address..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method" class="input">
+                            <option value="Cash on Delivery">Cash on Delivery</option>
+                            <option value="Card Payment" disabled>Credit/Debit Card (Unavailable)</option>
+                            <option value="UPI" disabled>UPI (Unavailable)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Place Order →</button>
+                </form>
+            </div>
+
+            <!-- Right: Summary -->
+            <div class="checkout-summary-card">
+                <div class="card-heading">Order Summary</div>
+                <div id="checkout-summary">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<script>
+  import { auth, db } from '../scripts/firebaseApp.js';
+  import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+  const form = document.getElementById("checkout-form");
+  const summaryBox = document.getElementById("checkout-summary");
+  const errorContainer = document.getElementById("error-container");
+
+  function showError(msg) {
+    if (!errorContainer) return;
+    errorContainer.innerHTML = `<div class="auth-error">${msg}</div>`;
+    setTimeout(() => { errorContainer.innerHTML = ""; }, 4000);
+  }
+
+  const getCart = () => {
+    try {
+      return JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch {
+      return [];
+    }
+  };
+
+  const cart = getCart();
+
+  // Validate cart is not empty
+  if (!cart.length) {
+    alert("Your cart is empty!");
+    window.location.href = "/";
+  }
+
+  // Render Order Summary
+  if (summaryBox) {
+    let tot = 0;
+    summaryBox.innerHTML = cart.map(i => {
+      const t = i.price * i.quantity;
+      tot += t;
+      return `<div class="sum-row"><span>${i.foodName} ×${i.quantity}</span><span>₹${t.toFixed(2)}</span></div>`;
+    }).join("") + `<div class="sum-row sum-total"><span>Total</span><span>₹${tot.toFixed(2)}</span></div>`;
+  }
+
+  // Handle order submission
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Check auth state
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login to place an order.");
+        window.location.href = "/login";
+        return;
+      }
+
+      const nameVal = (document.getElementById("delivery-name") as HTMLInputElement).value.trim();
+      const phoneVal = (document.getElementById("delivery-phone") as HTMLInputElement).value.trim();
+      const addressVal = (document.getElementById("delivery-address") as HTMLTextAreaElement).value.trim();
+      const paymentVal = (document.getElementById("payment-method") as HTMLSelectElement).value;
+      const submitBtn = form.querySelector("[type=submit]") as HTMLButtonElement;
+
+      if (!nameVal) {
+        showError("Please enter your full name.");
+        return;
+      }
+      if (!phoneVal) {
+        showError("Please enter your phone number.");
+        return;
+      }
+      if (!addressVal) {
+        showError("Please enter a delivery address.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Placing order…";
+
+      try {
+        await addDoc(collection(db, "orders"), {
+          userId: user.uid,
+          userEmail: user.email,
+          userName: nameVal,
+          userPhone: phoneVal,
+          foodItems: cart,
+          totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
+          address: addressVal,
+          paymentMethod: paymentVal,
+          orderStatus: "Pending",
+          createdAt: serverTimestamp()
+        });
+
+        // Clear cart
+        localStorage.removeItem("cart");
+        window.dispatchEvent(new Event('cart-updated'));
+
+        alert("🎉 Order placed successfully!");
+        window.location.href = "/orders";
+      } catch (err) {
+        showError("Failed to place order. Please try again.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Place Order →";
+      }
+    });
+  }
+</script>

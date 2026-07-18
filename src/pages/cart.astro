@@ -1,0 +1,142 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Your Cart — FoodExpress">
+    <main class="page-wrap">
+        <h1 class="page-title">Shopping Cart</h1>
+        <div class="cart-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-body">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+        <div class="cart-actions" id="cart-actions">
+            <a href="/" class="btn btn-secondary">← Back to Menu</a>
+            <a href="/checkout" class="btn btn-primary" id="checkout-btn">Proceed to Checkout →</a>
+        </div>
+    </main>
+</Layout>
+
+<script>
+  const esc = (s) => !s ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+
+  const getCart = () => {
+    try {
+      return JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch {
+      return [];
+    }
+  };
+
+  const saveCart = (c) => {
+    localStorage.setItem("cart", JSON.stringify(c));
+    // Dispatch event to update navbar badge
+    window.dispatchEvent(new Event('cart-updated'));
+  };
+
+  function renderCart() {
+    const tbody = document.getElementById("cart-body");
+    const checkoutBtn = document.getElementById("checkout-btn");
+    if (!tbody) return;
+
+    const cart = getCart();
+    tbody.innerHTML = "";
+
+    if (!cart.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="cart-empty">
+            <div>
+              <p>Your cart is empty</p>
+              <a href="/" class="btn btn-primary">Browse Menu</a>
+            </div>
+          </td>
+        </tr>`;
+      if (checkoutBtn) checkoutBtn.style.display = "none";
+      return;
+    }
+
+    if (checkoutBtn) checkoutBtn.style.display = "inline-flex";
+
+    let grand = 0;
+    cart.forEach((item, i) => {
+      const t = item.price * item.quantity;
+      grand += t;
+      const r = tbody.insertRow();
+      r.innerHTML = `
+        <td><strong>${esc(item.foodName)}</strong></td>
+        <td>₹${item.price.toFixed(2)}</td>
+        <td>
+          <div class="qty-ctrl">
+            <button class="qty-btn dec-btn" data-index="${i}">−</button>
+            <span>${item.quantity}</span>
+            <button class="qty-btn inc-btn" data-index="${i}">+</button>
+          </div>
+        </td>
+        <td>₹${t.toFixed(2)}</td>
+        <td>
+          <button class="remove-btn rm-btn" data-index="${i}">✕</button>
+        </td>`;
+    });
+
+    const tr = tbody.insertRow();
+    tr.className = "cart-total-row";
+    tr.innerHTML = `
+      <td colspan="3"><strong>Grand Total</strong></td>
+      <td colspan="2"><strong>₹${grand.toFixed(2)}</strong></td>`;
+
+    // Rebind Event Listeners for buttons
+    document.querySelectorAll(".dec-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = Number((e.target as HTMLElement).getAttribute("data-index"));
+        changeQty(idx, -1);
+      });
+    });
+
+    document.querySelectorAll(".inc-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = Number((e.target as HTMLElement).getAttribute("data-index"));
+        changeQty(idx, 1);
+      });
+    });
+
+    document.querySelectorAll(".rm-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = Number((e.target as HTMLElement).getAttribute("data-index"));
+        removeItem(idx);
+      });
+    });
+  }
+
+  function changeQty(i, d) {
+    const c = getCart();
+    if (!c[i]) return;
+    c[i].quantity += d;
+    if (c[i].quantity <= 0) {
+      c.splice(i, 1);
+    }
+    saveCart(c);
+    renderCart();
+  }
+
+  function removeItem(i) {
+    const c = getCart();
+    c.splice(i, 1);
+    saveCart(c);
+    renderCart();
+  }
+
+  // Initial render
+  renderCart();
+</script>

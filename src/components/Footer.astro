@@ -1,0 +1,257 @@
+---
+---
+<footer class="main-footer">
+    <div class="footer-container">
+        <!-- Brand Info / Why Choose FoodExpress -->
+        <div class="footer-brand-section">
+            <a href="/" class="footer-logo">🌿 FoodExpress</a>
+            <p class="footer-desc">
+                Serving the freshest tiffins, royal biryanis, and cafe specialties with love and lightning-fast delivery.
+            </p>
+            <div class="why-choose-us">
+                <h4 class="footer-title">Why Choose FoodExpress?</h4>
+                <ul class="why-list">
+                    <li><span class="why-icon">🌿</span> Fresh &amp; Sourced Locally Daily</li>
+                    <li><span class="why-icon">⚡</span> Under 30-Min Hot &amp; Fresh Deliveries</li>
+                    <li><span class="why-icon">👨‍🍳</span> Professional Chef-Crafted Quality</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-links-section">
+            <h4 class="footer-title font-highlight">Explore Menu</h4>
+            <ul class="footer-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#menu" onclick="if(typeof openMenuBook==='function'){event.preventDefault();openMenuBook();}">📖 Food Book (Text Menu)</a></li>
+                <li><a href="/#about">Our Story</a></li>
+                <li><a href="/cart">🛒 View Cart</a></li>
+                <li><a href="/orders">📦 Track Orders</a></li>
+            </ul>
+        </div>
+
+        <!-- Get In Touch -->
+        <div class="footer-contact-section">
+            <h4 class="footer-title font-highlight">Get In Touch</h4>
+            <div class="contact-card">
+                <p class="contact-item">
+                    <span class="contact-icon">📧</span>
+                    <a href="mailto:foodexpress@gmail.com">foodexpress@gmail.com</a>
+                </p>
+                <p class="contact-item">
+                    <span class="contact-icon">📞</span>
+                    <a href="tel:+919876543210">+91 98765 43210</a>
+                </p>
+                <p class="contact-item">
+                    <span class="contact-icon">📍</span>
+                    <span>Baker's Street, Food City, Hyderabad, India</span>
+                </p>
+            </div>
+            <div class="footer-hours">
+                <span class="hours-badge">⏰ Open Hours: 7:00 AM - 11:00 PM Daily</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copyright Bar -->
+    <div class="footer-bottom-bar">
+        <p>© 2026 <span>FoodExpress</span>. All rights reserved. Made with 💚 for food lovers.</p>
+    </div>
+</footer>
+
+<style>
+  .main-footer {
+    background: #111810;
+    border-top: 1px solid rgba(160, 200, 120, 0.15);
+    color: #dfebd8;
+    padding: 4.5rem 1.5rem 2rem;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+    gap: 3rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .footer-brand-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .footer-logo {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #4ade80;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    display: inline-block;
+  }
+
+  .footer-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #9cb198;
+    max-width: 380px;
+  }
+
+  .footer-title {
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: #ffffff;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+  }
+
+  .font-highlight::after {
+    content: '';
+    display: block;
+    width: 35px;
+    height: 3px;
+    background: #4ade80;
+    margin-top: 0.5rem;
+    border-radius: 99px;
+  }
+
+  .why-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+
+  .why-list li {
+    font-size: 0.88rem;
+    color: #dfebd8;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .why-icon {
+    font-size: 1rem;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .footer-links a {
+    color: #9cb198;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+    display: inline-block;
+  }
+
+  .footer-links a:hover {
+    color: #4ade80;
+    transform: translateX(5px);
+  }
+
+  .contact-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(160, 200, 120, 0.08);
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .contact-item a {
+    color: #9cb198;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .contact-item a:hover {
+    color: #4ade80;
+  }
+
+  .contact-icon {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    flex-shrink: 0;
+  }
+
+  .footer-hours {
+    margin-top: 1.25rem;
+  }
+
+  .hours-badge {
+    display: inline-block;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1.5px solid rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+  }
+
+  .footer-bottom-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(160, 200, 120, 0.08);
+    padding-top: 2rem;
+    text-align: center;
+  }
+
+  .footer-bottom-bar p {
+    font-size: 0.88rem;
+    color: #8c9c88;
+    margin: 0;
+  }
+
+  .footer-bottom-bar span {
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  @media (max-width: 900px) {
+    .footer-container {
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2.5rem;
+    }
+    .footer-contact-section {
+      grid-column: 1 / -1;
+    }
+    .contact-card {
+      max-width: 500px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .main-footer {
+      padding: 3rem 1rem 1.5rem;
+    }
+    .footer-container {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

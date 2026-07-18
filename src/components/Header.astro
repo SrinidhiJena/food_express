@@ -1,0 +1,286 @@
+---
+---
+<header>
+    <nav class="nav-container">
+        <a href="/" class="nav-logo">🌿 FoodExpress</a>
+        
+        <!-- Mobile Hamburger Toggle -->
+        <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle Menu" type="button">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+
+        <div class="nav-menu-wrapper" id="nav-menu-wrapper">
+            <ul class="nav-links">
+                <li><a href="/" id="link-home">Home</a></li>
+                <li><a href="/#menu" id="link-menu" onclick="if(typeof openMenuBook==='function'){event.preventDefault();openMenuBook();}">Menu</a></li>
+                <li><a href="/#about" id="link-about">About</a></li>
+                <li class="nav-cart-wrap">
+                    <a href="/cart" id="link-cart" class="nav-cart">🛒 Cart <span class="cart-badge">0</span></a>
+                </li>
+            </ul>
+
+            <div class="nav-user-actions">
+                <!-- Guest Sign In -->
+                <a href="/login" class="btn btn-outline btn-sm guest-link" id="link-login">Sign In</a>
+
+                <!-- Logged-in User Menu -->
+                <a href="/orders" class="user-link nav-action-link" id="link-orders" style="display:none;">Orders</a>
+                <!-- Role-aware dashboard link: label & visibility set by JS based on user's role -->
+                <a href="/admin" class="nav-action-link" id="link-dashboard" style="display:none;">Dashboard</a>
+                
+                <div class="user-profile user-link" style="display:none; align-items:center; gap:0.5rem; flex-wrap:nowrap;">
+                    <span id="welcome-msg" style="color: var(--text-2); font-weight: 700; font-size: 0.85rem; white-space:nowrap;"></span>
+                    <a href="#" id="logout-btn" class="btn btn-outline btn-sm" style="padding: 3px 8px; font-size: 0.72rem; margin:0;">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<style>
+  .menu-toggle-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--r);
+    transition: var(--transition);
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .menu-toggle-btn:hover {
+    background: rgba(160, 200, 120, 0.1);
+  }
+
+  .nav-menu-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    margin-left: 2rem;
+  }
+
+  @media(max-width: 768px) {
+    .menu-toggle-btn {
+      display: flex;
+    }
+
+    .nav-menu-wrapper {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem;
+      gap: 1.25rem;
+      margin-left: 0;
+      box-shadow: 0 10px 20px rgba(44, 62, 43, 0.05);
+      z-index: 999;
+      animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-menu-wrapper.open {
+      display: flex;
+    }
+
+    .nav-links {
+      flex-direction: column;
+      width: 100%;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-user-actions {
+      flex-direction: column;
+      width: 100%;
+      align-items: center;
+      gap: 1rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .nav-user-actions .btn, 
+    .nav-user-actions .nav-action-link, 
+    .nav-user-actions .user-profile {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  import { auth, db } from '../scripts/firebaseApp.js';
+  import { onAuthStateChanged, signOut } from 'firebase/auth';
+  import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+
+  const ADMIN_EMAIL = "srinidhijena@gmail.com";
+
+  // Listen to Auth State Changes
+  onAuthStateChanged(auth, async (user) => {
+    // Show only first name to prevent cluttering
+    const name = user ? (user.displayName || user.email.split("@")[0]).split(" ")[0] : "";
+    const wm = document.getElementById("welcome-msg");
+    if (wm) wm.textContent = user ? `Hi, ${name}` : "";
+
+    // Sync logged-in user details to Firestore
+    if (user) {
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email.split("@")[0],
+          lastLogin: new Date()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Failed to sync user profile to Firestore:", err);
+      }
+    }
+
+    // Toggle Visibility
+    document.querySelectorAll(".guest-link").forEach((el) => {
+      (el as HTMLElement).style.display = user ? "none" : "";
+    });
+    document.querySelectorAll(".user-link").forEach((el) => {
+      (el as HTMLElement).style.display = user ? (el.classList.contains("user-profile") ? "inline-flex" : "") : "none";
+    });
+
+    // Role-aware Dashboard link
+    const dashLink = document.getElementById("link-dashboard") as HTMLAnchorElement;
+    if (dashLink) {
+      if (!user) {
+        dashLink.style.display = "none";
+      } else if (user.email === ADMIN_EMAIL) {
+        dashLink.style.display = "";
+        dashLink.textContent = "🛡️ Admin";
+      } else {
+        // Check editors collection for role
+        try {
+          const snap = await getDocs(collection(db, "editors"));
+          let matchedRole = "";
+          snap.forEach(d => {
+            if (d.data().email === user.email.toLowerCase()) {
+              matchedRole = d.data().role || "editor";
+            }
+          });
+          if (matchedRole === "dev-admin") {
+            dashLink.style.display = "";
+            dashLink.textContent = "💻 Dev Panel";
+          } else if (matchedRole === "editor") {
+            dashLink.style.display = "";
+            dashLink.textContent = "✏️ Menu Editor";
+          } else {
+            dashLink.style.display = "none";
+          }
+        } catch (err) {
+          console.error("Failed to check editor rights:", err);
+          dashLink.style.display = "none";
+        }
+      }
+    }
+  });
+
+  // Highlight Active Navigation Link
+  const highlightActive = () => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    
+    // Reset all
+    document.querySelectorAll("nav a").forEach(el => el.classList.remove("active-nav"));
+    
+    if (path === "/cart" || path === "/cart/") {
+      document.getElementById("link-cart")?.classList.add("active-nav");
+    } else if (path === "/orders" || path === "/orders/") {
+      document.getElementById("link-orders")?.classList.add("active-nav");
+    } else if (path === "/admin" || path === "/admin/") {
+      document.getElementById("link-dashboard")?.classList.add("active-nav");
+    } else if (path === "/login" || path === "/login/" || path === "/signup" || path === "/signup/") {
+      document.getElementById("link-login")?.classList.add("active-nav");
+    } else {
+      if (hash === "#menu") {
+        document.getElementById("link-menu")?.classList.add("active-nav");
+      } else if (hash === "#about") {
+        document.getElementById("link-about")?.classList.add("active-nav");
+      } else {
+        document.getElementById("link-home")?.classList.add("active-nav");
+      }
+    }
+  };
+
+  // Run highlight on page load and hash changes
+  highlightActive();
+  window.addEventListener("hashchange", highlightActive);
+
+  // Logout Handler
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await signOut(auth);
+      window.location.href = "/";
+    });
+  }
+
+  // Cart Badge Update Helper
+  const getCart = () => {
+    try {
+      return JSON.parse(localStorage.getItem("cart") || "[]");
+    } catch {
+      return [];
+    }
+  };
+
+  const updateBadge = () => {
+    const cart = getCart();
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    document.querySelectorAll(".cart-badge").forEach((el) => {
+      const badge = el as HTMLElement;
+      badge.textContent = String(count);
+      badge.style.display = count ? "inline-flex" : "none";
+    });
+  };
+
+  // Run badge update
+  updateBadge();
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cart') {
+      updateBadge();
+    }
+  });
+
+  window.addEventListener('cart-updated', () => {
+    updateBadge();
+  });
+
+  // Mobile Hamburger Toggle
+  const toggleBtn = document.getElementById("menu-toggle-btn");
+  const menuWrapper = document.getElementById("nav-menu-wrapper");
+
+  toggleBtn?.addEventListener("click", () => {
+    menuWrapper?.classList.toggle("open");
+  });
+
+  // Close menu on link click (for mobile smoothness)
+  document.querySelectorAll(".nav-links a, .nav-user-actions a").forEach(link => {
+    link.addEventListener("click", () => {
+      menuWrapper?.classList.remove("open");
+    });
+  });
+</script>

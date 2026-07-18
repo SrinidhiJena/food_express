@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart — FoodExpress</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        <h2>🌿 FoodExpress</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#menu">Menu</a></li>
+            <li class="guest-link"><a href="login.html">Login</a></li>
+            <li class="guest-link"><a href="signup.html">Sign Up</a></li>
+            <li class="user-link" style="display:none;"><a href="orders.html">My Orders</a></li>
+            <li class="user-link" style="display:none;"><span id="welcome-msg"></span></li>
+            <li class="user-link" style="display:none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="cart-container">
+    <h1>🛒 Your Cart</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Food Item</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="cart-body">
+            <!-- Dynamically rendered by script.js -->
+        </tbody>
+    </table>
+    <div class="cart-actions">
+        <a href="index.html" class="btn-secondary">← Continue Shopping</a>
+        <a href="checkout.html" class="btn-primary">Proceed to Checkout →</a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

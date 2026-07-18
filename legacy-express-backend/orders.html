@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders — FoodExpress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        <h2>🌿 FoodExpress</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#menu">Menu</a></li>
+            <li><a href="cart.html" class="nav-cart">🛒 Cart</a></li>
+            <li class="user-link" style="display:none;"><a href="orders.html">My Orders</a></li>
+            <li class="user-link" style="display:none;"><span id="welcome-msg"></span></li>
+            <li class="user-link" style="display:none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="cart-container">
+    <h1>📋 My Orders</h1>
+    <div id="orders-container">
+        <p class="no-orders">Loading your orders...</p>
+    </div>
+    <div class="cart-actions" style="margin-top:20px;">
+        <a href="index.html" class="btn-secondary">← Back to Menu</a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

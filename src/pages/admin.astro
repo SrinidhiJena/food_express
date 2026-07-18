@@ -1,0 +1,1892 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Admin Panel — FoodExpress" hideHeaderFooter={true}>
+    <style is:global>
+      /* Local overrides because navbar is hidden */
+      .admin-container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+      }
+      .admin-sidebar {
+        top: 0 !important;
+        bottom: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      @media(max-width:900px) {
+        .admin-mobile-header {
+          top: 0 !important;
+        }
+        .admin-container {
+          padding-top: 52px !important;
+        }
+        .admin-sidebar {
+          top: 0 !important;
+          height: 100dvh !important;
+          max-height: 100dvh !important;
+        }
+      }
+      /* Swiggy/Zomato style Pipeline progress styling */
+      .pipeline-step {
+        position: relative;
+        text-align: center;
+        flex: 1;
+      }
+      .pipeline-step::after {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: var(--border, #333);
+        z-index: 1;
+        transition: background 0.3s;
+      }
+      .pipeline-step:last-child::after {
+        display: none;
+      }
+      .pipeline-step.completed::after,
+      .pipeline-step.active::after {
+        background: var(--primary, #4ade80);
+      }
+      .step-dot {
+        position: relative;
+        z-index: 2;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--border, #333);
+        border: 2px solid var(--bg-card, #1a1a2e);
+        margin: 0 auto 0.25rem;
+        transition: all 0.3s ease;
+      }
+      .pipeline-step.active .step-dot {
+        background: var(--primary, #4ade80);
+        box-shadow: 0 0 8px var(--primary, #4ade80);
+        transform: scale(1.2);
+      }
+      .pipeline-step.completed .step-dot {
+        background: var(--primary, #4ade80);
+      }
+    </style>
+    
+    <main class="admin-wrap" id="admin-root">
+        <!-- Access Denied or Loading state is managed by script -->
+        <div class="loading-state" id="admin-loader">
+            <div class="spinner"></div>
+            <p>Verifying admin permissions…</p>
+        </div>
+        
+        <div id="admin-content" style="display:none;" class="admin-container">
+            <!-- Mobile Header Bar -->
+            <div class="admin-mobile-header">
+                <button id="sidebar-toggle-btn" class="mobile-toggle-btn" type="button" aria-label="Open menu">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <span style="font-weight: 800; font-size: 0.95rem; color: var(--text);">FoodExpress Ops Center</span>
+            </div>
+
+            <!-- Mobile Backdrop Overlay -->
+            <div id="sidebar-backdrop" class="sidebar-backdrop" style="display:none;"></div>
+
+            <!-- Left Sidebar (TakeoutFix Style) -->
+            <aside class="admin-sidebar">
+                <div class="sidebar-top">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <div class="sidebar-avatar-logo">F</div>
+                        <div class="sidebar-title-group">
+                            <span class="sidebar-brand">FoodExpress</span>
+                            <span class="sidebar-subbrand">OPS CENTER</span>
+                        </div>
+                    </div>
+                    <button class="sidebar-bell-btn" title="View alerts" onclick="alert('No new alerts.')" type="button">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </button>
+                </div>
+
+                <div class="sidebar-sections-scroller">
+                    <!-- OPERATIONS SECTION -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-header">OPERATIONS</div>
+                        <ul class="sidebar-menu">
+                            <li class="super-admin-only">
+                                <a href="#section-stats" class="sidebar-item active">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#section-add-food" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                    Add Food Item
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#section-manage-foods" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                    Manage Menu
+                                </a>
+                            </li>
+                            <li class="super-admin-only">
+                                <a href="#section-manage-orders" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                    Active Orders
+                                </a>
+                            </li>
+                            <li class="super-admin-only">
+                                <a href="#section-users" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    Manage Users
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- CONTENT SECTION -->
+                    <div class="sidebar-section super-admin-only">
+                        <div class="sidebar-section-header">CONTENT</div>
+                        <ul class="sidebar-menu">
+                            <li>
+                                <a href="#mock-reviews" class="sidebar-item mock-link">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    Reviews
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#mock-statistics" class="sidebar-item mock-link">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                    Statistics
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- SYSTEM SECTION -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-header">SYSTEM</div>
+                        <ul class="sidebar-menu">
+                            <li class="dev-admin-only">
+                                <a href="#section-settings" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    Keys & Secrets
+                                </a>
+                            </li>
+                            <li class="super-admin-only">
+                                <a href="#section-app-settings" class="sidebar-item">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.2" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    Settings
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Bottom Open Website Link -->
+                <div class="sidebar-footer" style="padding: 1.25rem;">
+                    <a href="/" class="sidebar-footer-link">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        Open Website
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="admin-main-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem; flex-wrap:wrap; gap:1rem;">
+                    <div>
+                        <h1 class="admin-title" id="admin-title-heading">Admin Dashboard</h1>
+                        <p class="admin-subtitle" style="margin-bottom:0;">Manage FoodExpress foods, orders, and sales stats.</p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <button id="seed-menu-btn" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary); font-weight:700; margin:0;" title="Restores standard menu items if empty">✨ Load Sample Menu</button>
+                        <button id="admin-top-logout-btn" class="btn btn-danger" style="margin:0; font-weight:700; display:flex; align-items:center; gap:0.4rem; padding: 0.5rem 1rem; border-radius: 8px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <section id="section-stats" class="admin-tab-content scroll-mt" style="margin-bottom: 2.5rem;">
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-foods">0</div>
+                            <div class="stat-lbl">Active Foods</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-orders">0</div>
+                            <div class="stat-lbl">Total Orders</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val" id="stat-revenue">₹0</div>
+                            <div class="stat-lbl">Revenue</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Add Food Item Section -->
+                <section id="section-add-food" class="admin-section admin-tab-content scroll-mt" style="margin-bottom: 2.5rem; display: none;">
+                    <div class="admin-section-head">
+                        <h2>Add New Food Item</h2>
+                    </div>
+                    <form id="add-food-form" class="add-food-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="food-name">Food Name</label>
+                                <input type="text" id="food-name" class="input" required placeholder="e.g. Garlic Bread">
+                            </div>
+                            <div class="form-group">
+                                <label for="food-category">Category</label>
+                                <select id="food-category" class="input" style="cursor:pointer;" required>
+                                    <option value="" disabled selected>Select Category</option>
+                                    <option value="Tiffin">🥞 Tiffins</option>
+                                    <option value="Biryani">🍛 Biryanis</option>
+                                    <option value="Haleem">🥘 Haleem</option>
+                                    <option value="Curry">🍲 Curries</option>
+                                    <option value="Starter">🍢 Starters</option>
+                                    <option value="Dessert">🍮 Desserts</option>
+                                    <option value="Combos">🎁 Combos</option>
+                                    <option value="Breads">🍞 Breads</option>
+                                    <option value="Beverages (Hot)">☕ Beverages (Hot)</option>
+                                    <option value="Beverages (Cold)">🥤 Beverages (Cold)</option>
+                                    <option value="Meals">🍱 Meals</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="food-restaurant">Restaurant Source</label>
+                                <select id="food-restaurant" class="input" style="cursor:pointer;" required>
+                                    <option value="" disabled selected>Select Restaurant</option>
+                                    <option value="Shah Ghouse">Shah Ghouse</option>
+                                    <option value="Paradise Biryani">Paradise Biryani</option>
+                                    <option value="Irani Cafe">Irani Cafe</option>
+                                    <option value="Chutneys">Chutneys</option>
+                                    <option value="Pista House">Pista House</option>
+                                    <option value="Mehfil Restaurant">Mehfil Restaurant</option>
+                                    <option value="Burger King">Burger King</option>
+                                    <option value="Subway">Subway</option>
+                                    <option value="Bikanervala">Bikanervala</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="food-price">Price (₹)</label>
+                                <input type="number" id="food-price" class="input" required min="1" placeholder="e.g. 149">
+                            </div>
+                            <div class="form-group">
+                                <label for="food-image">Image URL / Upload / Paste</label>
+                                <div style="display:flex; gap:0.5rem; align-items:center;">
+                                    <input type="text" id="food-image" class="input" placeholder="Paste URL/Image or upload file..." style="flex:1;">
+                                    <label class="btn btn-outline btn-sm" style="margin:0; cursor:pointer; padding: 0.5rem 1rem; flex-shrink:0;">
+                                        📁 Upload
+                                        <input type="file" id="food-image-file" accept="image/*" style="display:none;">
+                                    </label>
+                                    <button type="button" id="food-image-paste-btn" class="btn btn-outline btn-sm" style="margin:0; padding: 0.5rem 1rem; flex-shrink:0;">
+                                        📋 Paste
+                                    </button>
+                                </div>
+                                <!-- Live Image Preview -->
+                                <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.75rem;">
+                                    <img id="food-image-preview" src="images/pizza.jpg" style="width:55px; height:55px; object-fit:cover; border-radius:8px; border:1px solid var(--border); display:none;" onerror="this.src='images/pizza.jpg'">
+                                    <span id="food-image-preview-label" style="font-size:0.75rem; color:var(--text-2); display:none;">✨ Live Preview</span>
+                                </div>
+                                <div class="preset-links-wrap" style="margin-top: 0.5rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-2);">Presets:</span>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=600&q=80">Biryani</button>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80">Dosa</button>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="https://images.unsplash.com/photo-1680373854583-lY2m5lxJrmQ?auto=format&fit=crop&w=600&q=80">Idli</button>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="images/puri_bhaji.png">Puri Bhaji</button>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="images/biryani_combo.png">Biryani Combo</button>
+                                    <button type="button" class="preset-btn add-preset-btn" data-url="images/chai_bun_combo.png">Chai Combo</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                                <label for="food-description" style="margin:0;">Description</label>
+                                <button type="button" id="ai-gen-desc-btn" class="btn btn-outline btn-sm" style="padding:2px 8px; font-size:0.75rem; margin:0;" title="Write description using Gemini AI">🪄 AI Write</button>
+                            </div>
+                            <textarea id="food-description" class="input" required placeholder="Describe the item..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">+ Add Food Item</button>
+                    </form>
+                </section>
+
+                <!-- Manage Foods Section -->
+                <section id="section-manage-foods" class="admin-section admin-tab-content scroll-mt" style="margin-bottom: 2.5rem; display: none;">
+                    <div class="admin-section-head">
+                        <h2>Manage Food Items</h2>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-foods-table">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Manage Orders Section -->
+                <section id="section-manage-orders" class="admin-section admin-tab-content scroll-mt" style="margin-bottom: 2.5rem; display: none;">
+                    <div class="admin-section-head">
+                        <h2>Manage Orders</h2>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer Email</th>
+                                    <th>Items</th>
+                                    <th>Total Price</th>
+                                    <th>Order Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-orders-table">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Gemini AI Settings Section -->
+                <section id="section-settings" class="admin-section admin-tab-content scroll-mt" style="display: none;">
+                    <div class="admin-section-head">
+                        <h2>🤖 Gemini AI Keys</h2>
+                    </div>
+                    
+                    <!-- Gemini Config -->
+                    <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-card);">
+                        <h3 style="font-size: 1.1rem; font-weight:800; color: var(--text); margin-bottom: 0.5rem;">🪄 Gemini Description Generator</h3>
+                        <p style="margin-bottom: 1.25rem; color: var(--text-2); font-size: 0.9rem; line-height: 1.5;">
+                            Save your Google Gemini API Key locally in your browser. This enables the <strong>🪄 AI Write</strong> description helper on both Add and Edit food item panels.
+                        </p>
+                        <div class="form-group">
+                            <label for="gemini-api-key" style="font-weight:700;">Gemini API Key</label>
+                            <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.5rem;">
+                                <input type="password" id="gemini-api-key" class="input" placeholder="Enter your API key here (AIzaSy...)" style="flex:1;">
+                                <button type="button" id="save-api-key-btn" class="btn btn-primary btn-sm" style="margin:0;">Save Key</button>
+                                <button type="button" id="rotate-api-key-btn" class="btn btn-outline btn-sm" style="margin:0; display:none;">🔄 Rotate Key</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- App Settings Section -->
+                <section id="section-app-settings" class="admin-section admin-tab-content scroll-mt" style="display: none;">
+                    <div class="admin-section-head">
+                        <h2>⚙️ Operations Settings</h2>
+                    </div>
+                    
+                    <!-- Editors Management Config -->
+                    <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-card); margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.1rem; font-weight:800; color: var(--text); margin-bottom: 0.5rem;">👥 Authorized Menu Editors</h3>
+                        <p style="margin-bottom: 1.25rem; color: var(--text-2); font-size: 0.9rem; line-height: 1.5;">
+                            Manage team members who are authorized to access the <strong>✏️ Edit Menu</strong> page.
+                        </p>
+                        
+                        <form id="add-editor-form" style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                            <input type="email" id="new-editor-email" class="input" placeholder="e.g. editor@foodexpress.com" style="flex:1; min-width: 200px;" required>
+                            <select id="new-editor-role" class="input" style="width: auto; min-width: 150px;" required>
+                                <option value="editor" selected>✏️ Menu Editor</option>
+                                <option value="dev-admin">💻 Dev Admin</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm" style="margin:0;">➕ Add Member</button>
+                        </form>
+
+                        <div class="admin-table-wrap" style="margin-top:1rem; border-radius: var(--r);">
+                            <table class="admin-table" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Email Address</th>
+                                        <th>Role</th>
+                                        <th>Added By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="authorized-editors-list">
+                                    <tr><td colspan="3" class="text-center">Loading authorized members...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- System Maintenance Mode Config -->
+                    <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-card);">
+                        <h3 style="font-size: 1.1rem; font-weight:800; color: var(--text); margin-bottom: 0.5rem;">🔧 Maintenance Mode</h3>
+                        <p style="margin-bottom: 1.25rem; color: var(--text-2); font-size: 0.9rem; line-height: 1.5;">
+                            When enabled, regular website visitors will be blocked by an "Under Maintenance" overlay page. Admins and authorized editors bypass this block to continue building.
+                        </p>
+                        
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-top:1rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:700; color: var(--text);">
+                                <input type="checkbox" id="maintenance-toggle" style="width: 20px; height: 20px; cursor:pointer;">
+                                Enable Maintenance Mode
+                            </label>
+                            <button id="save-maintenance-btn" class="btn btn-primary btn-sm" style="margin:0;">Save Settings</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Manage Users Section -->
+                <section id="section-users" class="admin-section admin-tab-content scroll-mt" style="display: none;">
+                    <div class="admin-section-head">
+                        <h2>👥 Registered Users</h2>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Display Name</th>
+                                    <th>Email Address</th>
+                                    <th>Last Active</th>
+                                    <th>Access Level</th>
+                                    <th>Permissions Control</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table">
+                                <tr><td colspan="5" class="text-center">Loading users database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Floating Edit Modal -->
+        <div id="edit-food-modal" class="modal-backdrop" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>✏️ Edit Food Item</h3>
+                    <button id="close-edit-modal" class="modal-close-btn">&times;</button>
+                </div>
+                <form id="edit-food-form">
+                    <input type="hidden" id="edit-food-id">
+                    <div class="form-group">
+                        <label for="edit-food-name">Food Name</label>
+                        <input type="text" id="edit-food-name" class="input" required>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="edit-food-category">Category</label>
+                            <select id="edit-food-category" class="input" style="cursor:pointer;" required>
+                                <option value="" disabled>Select Category</option>
+                                <option value="Tiffin">🥞 Tiffins</option>
+                                <option value="Biryani">🍛 Biryanis</option>
+                                <option value="Haleem">🥘 Haleem</option>
+                                <option value="Curry">🍲 Curries</option>
+                                <option value="Starter">🍢 Starters</option>
+                                <option value="Dessert">🍮 Desserts</option>
+                                <option value="Combos">🎁 Combos</option>
+                                <option value="Breads">🍞 Breads</option>
+                                <option value="Beverages (Hot)">☕ Beverages (Hot)</option>
+                                <option value="Beverages (Cold)">🥤 Beverages (Cold)</option>
+                                <option value="Meals">🍱 Meals</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-food-price">Price (₹)</label>
+                            <input type="number" id="edit-food-price" class="input" required min="1">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="edit-food-restaurant">Restaurant Source</label>
+                        <select id="edit-food-restaurant" class="input" style="cursor:pointer;" required>
+                            <option value="Shah Ghouse">Shah Ghouse</option>
+                            <option value="Paradise Biryani">Paradise Biryani</option>
+                            <option value="Irani Cafe">Irani Cafe</option>
+                            <option value="Chutneys">Chutneys</option>
+                            <option value="Pista House">Pista House</option>
+                            <option value="Mehfil Restaurant">Mehfil Restaurant</option>
+                            <option value="Burger King">Burger King</option>
+                            <option value="Subway">Subway</option>
+                            <option value="Bikanervala">Bikanervala</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="edit-food-image">Image URL / Upload / Paste</label>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <input type="text" id="edit-food-image" class="input" placeholder="Paste URL/Image or upload file..." style="flex:1;" required>
+                            <label class="btn btn-outline btn-sm" style="margin:0; cursor:pointer; padding: 0.5rem 1rem; flex-shrink:0;">
+                                📁 Upload
+                                <input type="file" id="edit-food-image-file" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="button" id="edit-food-image-paste-btn" class="btn btn-outline btn-sm" style="margin:0; padding: 0.5rem 1rem; flex-shrink:0;">
+                                📋 Paste
+                            </button>
+                        </div>
+                        <!-- Live Image Preview -->
+                        <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.75rem;">
+                            <img id="edit-food-image-preview" src="images/pizza.jpg" style="width:55px; height:55px; object-fit:cover; border-radius:8px; border:1px solid var(--border); display:none;" onerror="this.src='images/pizza.jpg'">
+                            <span id="edit-food-image-preview-label" style="font-size:0.75rem; color:var(--text-2); display:none;">✨ Live Preview</span>
+                        </div>
+                        <div class="preset-links-wrap" style="margin-top: 0.5rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-2);">Presets:</span>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=600&q=80">Biryani</button>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80">Dosa</button>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="https://images.unsplash.com/photo-1680373854583-lY2m5lxJrmQ?auto=format&fit=crop&w=600&q=80">Idli</button>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="images/puri_bhaji.png">Puri Bhaji</button>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="images/biryani_combo.png">Biryani Combo</button>
+                            <button type="button" class="preset-btn edit-preset-btn" data-url="images/chai_bun_combo.png">Chai Combo</button>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <label for="edit-food-description" style="margin:0;">Description</label>
+                            <button type="button" id="edit-ai-gen-desc-btn" class="btn btn-outline btn-sm" style="padding:2px 8px; font-size:0.75rem; margin:0;" title="Write description using Gemini AI">🪄 AI Write</button>
+                        </div>
+                        <textarea id="edit-food-description" class="input" required rows="3"></textarea>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+                        <button type="button" id="cancel-edit-btn" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Order Detail Modal (Swiggy/Zomato style Partner App Panel) -->
+        <div id="order-detail-modal" class="modal-backdrop" style="display:none;">
+            <div class="modal-card" style="max-width: 600px; width: 100%;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem;">📋 Swiggy/Zomato Dispatch Dashboard</h3>
+                        <span id="detail-order-id" style="font-size: 0.8rem; color: var(--text-2); font-family: monospace; font-weight:700;">Order ID: #—</span>
+                    </div>
+                    <button id="close-order-detail-modal" class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-body" style="padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                    
+                    <!-- Swiggy/Zomato status pipeline tracking bar -->
+                    <div style="background: rgba(74, 222, 128, 0.05); padding: 0.75rem 1rem; border-radius: var(--r); border: 1px solid var(--border);">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Delivery Pipeline Status</div>
+                        <div class="pipeline-bar" style="display: flex; justify-content: space-between; position: relative; margin-top: 0.5rem; gap: 0.25rem;">
+                            <div class="pipeline-step" id="step-Pending" style="flex: 1; text-align: center;">
+                                <div class="step-dot"></div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text);">Received</div>
+                            </div>
+                            <div class="pipeline-step" id="step-Preparing" style="flex: 1; text-align: center;">
+                                <div class="step-dot"></div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-2);">Kitchen Cooking</div>
+                            </div>
+                            <div class="pipeline-step" id="step-On the Way" style="flex: 1; text-align: center;">
+                                <div class="step-dot"></div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-2);">Out for Delivery</div>
+                            </div>
+                            <div class="pipeline-step" id="step-Delivered" style="flex: 1; text-align: center;">
+                                <div class="step-dot"></div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-2);">Delivered</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Contact Info -->
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Customer Delivery Details</div>
+                        <div style="background: var(--bg-2); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--r); font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                            <div>👤 <strong>Name:</strong> <span id="detail-cust-name">—</span></div>
+                            <div>📞 <strong>Phone:</strong> <span id="detail-cust-phone">—</span></div>
+                            <div>📧 <strong>Email:</strong> <span id="detail-cust-email">—</span></div>
+                            <div>📍 <strong>Address:</strong> <span id="detail-cust-address">—</span></div>
+                            <div>💳 <strong>Payment Method:</strong> <span id="detail-cust-payment">—</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Ordered Items & Restaurant Source (Middleman Role) -->
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">Ordered Items (Middleman Dispatch Dispatcher)</div>
+                        <div class="admin-table-wrap" style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r);">
+                            <table class="admin-table" style="font-size: 0.825rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Dish</th>
+                                        <th>Restaurant Source</th>
+                                        <th style="text-align:center;">Qty</th>
+                                        <th>Price</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-items-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Grand Total -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.75rem; font-size: 1.05rem;">
+                        <strong>Grand Total:</strong>
+                        <span id="detail-grand-total" style="font-weight: 800; font-size: 1.2rem; color: var(--primary);">₹0.00</span>
+                    </div>
+
+                    <!-- Status Change controls -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap: 1rem; flex-wrap:wrap; margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top:0.75rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <label for="detail-status-select" style="margin:0; font-weight:700; font-size:0.875rem;">Dispatch pipeline status:</label>
+                            <select id="detail-status-select" class="input" style="width: auto; min-width: 140px; padding: 0.35rem 0.75rem; margin:0;">
+                                <option value="Pending">Pending</option>
+                                <option value="Preparing">Preparing</option>
+                                <option value="On the Way">On the Way</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" id="print-invoice-btn" class="btn btn-outline btn-sm">🖨️ Print Receipt</button>
+                            <button type="button" id="close-detail-modal-btn" class="btn btn-primary btn-sm">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<script>
+  import { auth, db } from '../scripts/firebaseApp.js';
+  import { collection, getDocs, doc, addDoc, updateDoc, deleteDoc, query, orderBy, getDoc, setDoc } from 'firebase/firestore';
+  import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+  const ADMIN_EMAIL = "srinidhijena@gmail.com";
+  const esc = (s) => !s ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+
+  function toast(msg, type = "success") {
+    document.getElementById("app-toast")?.remove();
+    const t = document.createElement("div");
+    t.id = "app-toast";
+    t.className = `app-toast toast-${type}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => {
+      t.classList.remove("show");
+      setTimeout(() => t.remove(), 400);
+    }, 3000);
+  }
+
+  // Auth checker
+  onAuthStateChanged(auth, async (user) => {
+    const loader = document.getElementById("admin-loader");
+    const content = document.getElementById("admin-content");
+    const root = document.getElementById("admin-root");
+    
+    if (!root) return;
+
+    if (!user) {
+      if (loader) loader.remove();
+      root.innerHTML = `
+        <div class="access-denied">
+          <div class="denied-icon">🔒</div>
+          <h2>Access Denied</h2>
+          <p>Please sign in first to access the dashboard.</p>
+          <a href="/login" class="btn btn-primary">Sign In</a>
+        </div>`;
+      return;
+    }
+
+    let role = ""; // "super-admin", "dev-admin", or "editor"
+
+    if (user.email === ADMIN_EMAIL) {
+      role = "super-admin";
+    } else {
+      try {
+        const snap = await getDocs(collection(db, "editors"));
+        snap.forEach(d => {
+          if (d.data().email === user.email.toLowerCase()) {
+            role = d.data().role || "editor";
+          }
+        });
+      } catch (err) {
+        console.error("Failed to fetch user permissions:", err);
+      }
+    }
+
+    if (!role) {
+      if (loader) loader.remove();
+      root.innerHTML = `
+        <div class="access-denied">
+          <div class="denied-icon">🔒</div>
+          <h2>Access Denied</h2>
+          <p>You do not have administrative or editor permissions to access this page.</p>
+          <a href="/" class="btn btn-primary">Go Home</a>
+        </div>`;
+      return;
+    }
+
+    // Role-based visibility toggle
+    const titleHeading = document.getElementById("admin-title-heading");
+    if (role === "editor") {
+      if (titleHeading) titleHeading.textContent = "Menu Editor Panel";
+      document.querySelectorAll(".super-admin-only, .dev-admin-only").forEach(el => {
+        (el as HTMLElement).style.display = "none";
+      });
+      // Force redirect to menu management if current tab is restricted
+      const hash = window.location.hash;
+      if (!hash || ["#section-stats", "#section-manage-orders", "#section-users", "#section-app-settings", "#section-settings"].includes(hash)) {
+        switchTab("#section-manage-foods");
+      }
+    } else if (role === "dev-admin") {
+      if (titleHeading) titleHeading.textContent = "Developer Admin Panel";
+      document.querySelectorAll(".super-admin-only").forEach(el => {
+        (el as HTMLElement).style.display = "none";
+      });
+      document.querySelectorAll(".dev-admin-only").forEach(el => {
+        (el as HTMLElement).style.display = "";
+      });
+      // Force redirect to menu management if current tab is restricted
+      const hash = window.location.hash;
+      if (!hash || ["#section-stats", "#section-manage-orders", "#section-users", "#section-app-settings"].includes(hash)) {
+        switchTab("#section-manage-foods");
+      }
+    } else {
+      // Super Admin
+      if (titleHeading) titleHeading.textContent = "Super Admin Dashboard";
+      document.querySelectorAll(".super-admin-only, .dev-admin-only").forEach(el => {
+        (el as HTMLElement).style.display = "";
+      });
+      // Default to stats tab if no hash is set
+      const hash = window.location.hash;
+      if (!hash) {
+        switchTab("#section-stats");
+      } else {
+        switchTab(hash);
+      }
+    }
+
+    // Is Authorized
+    if (loader) loader.style.display = "none";
+    if (content) content.style.display = "block";
+
+    // Load Data
+    await loadAdminDashboard(role);
+  });
+
+  async function loadAdminDashboard(role) {
+    if (role === "super-admin") {
+      await Promise.all([
+        loadStats(),
+        loadAdminFoods(),
+        loadAdminOrders(),
+        loadAuthorizedEditors(),
+        loadMaintenanceMode(),
+        loadAdminUsers()
+      ]);
+    } else {
+      // Dev Admin or Editor (Menu management only)
+      await Promise.all([
+        loadAdminFoods()
+      ]);
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const [foodsSnap, ordersSnap] = await Promise.all([
+        getDocs(collection(db, "foods")),
+        getDocs(collection(db, "orders"))
+      ]);
+
+      const activeFoods = foodsSnap.size;
+      const totalOrders = ordersSnap.size;
+      let revenue = 0;
+      ordersSnap.forEach(docSnap => {
+        revenue += (docSnap.data().totalPrice || 0);
+      });
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      setVal("stat-foods", String(activeFoods));
+      setVal("stat-orders", String(totalOrders));
+      setVal("stat-revenue", `₹${Number(revenue).toFixed(2)}`);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  async function loadAdminFoods() {
+    const tableBody = document.getElementById("admin-foods-table");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Loading foods...</td></tr>`;
+
+    try {
+      const snap = await getDocs(collection(db, "foods"));
+      if (snap.empty) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center muted">No foods found. Add one above.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = "";
+      snap.forEach(docSnap => {
+        const f = { id: docSnap.id, ...docSnap.data() };
+        const row = document.createElement("tr");
+        row.id = `fr-${f.id}`;
+        row.innerHTML = `
+          <td><img src="${esc(f.image || 'images/pizza.jpg')}" class="tbl-img" onerror="this.src='images/pizza.jpg'"></td>
+          <td>
+            <strong>${esc(f.foodName)}</strong>
+            <div style="font-size:0.75rem; color:var(--text-2); margin-top:0.25rem;">👨‍🍳 ${esc(f.restaurant || 'FoodExpress Special')}</div>
+          </td>
+          <td><span class="category-badge">${esc(f.category)}</span></td>
+          <td>
+            <span class="price-val">₹${Number(f.price).toFixed(2)}</span>
+          </td>
+          <td class="desc-cell">${esc(f.description).slice(0, 50)}...</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-sm btn-outline edit-food-btn" data-id="${f.id}">✏️ Edit</button>
+              <button class="btn btn-sm btn-danger del-food-btn" data-id="${f.id}">🗑️</button>
+            </div>
+          </td>`;
+        tableBody.appendChild(row);
+      });
+
+      // Bind actions
+      document.querySelectorAll(".edit-food-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = (e.target as HTMLElement).getAttribute("data-id");
+          if (id) {
+            const docSnap = snap.docs.find(d => d.id === id);
+            if (docSnap) {
+              openEditModal(id, docSnap.data());
+            }
+          }
+        });
+      });
+
+      document.querySelectorAll(".del-food-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = (e.target as HTMLElement).getAttribute("data-id");
+          if (id) handleDeleteFood(id);
+        });
+      });
+    } catch(err) {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center muted">Failed to load foods.</td></tr>`;
+    }
+  }
+
+  async function handleDeleteFood(id) {
+    if (!confirm("Are you sure you want to delete this food item?")) return;
+    try {
+      await deleteDoc(doc(db, "foods", id));
+      document.getElementById(`fr-${id}`)?.remove();
+      toast("🗑️ Food item deleted.");
+      await loadStats();
+    } catch(err) {
+      toast("❌ Delete failed.", "error");
+    }
+  }
+
+  let activeOrderDetailId = "";
+  let activeOrderDetailData: any = null;
+
+  function updatePipelineTracker(status: string) {
+    const steps = ["Pending", "Preparing", "On the Way", "Delivered"];
+    const statusIndex = steps.indexOf(status);
+    
+    steps.forEach((s, idx) => {
+      const stepEl = document.getElementById(`step-${s}`);
+      if (stepEl) {
+        stepEl.classList.remove("active", "completed");
+        const dot = stepEl.querySelector(".step-dot");
+        const text = stepEl.querySelector("div:last-child");
+        
+        if (idx === statusIndex) {
+          stepEl.classList.add("active");
+          if (dot) (dot as HTMLElement).style.background = "var(--primary)";
+          if (text) (text as HTMLElement).style.color = "var(--text)";
+        } else if (idx < statusIndex) {
+          stepEl.classList.add("completed");
+          if (dot) (dot as HTMLElement).style.background = "var(--primary)";
+          if (text) (text as HTMLElement).style.color = "var(--primary)";
+        } else {
+          if (dot) (dot as HTMLElement).style.background = "var(--border)";
+          if (text) (text as HTMLElement).style.color = "var(--text-2)";
+        }
+      }
+    });
+  }
+
+  function openOrderDetail(id: string, o: any) {
+    activeOrderDetailId = id;
+    activeOrderDetailData = o;
+
+    const modal = document.getElementById("order-detail-modal");
+    (document.getElementById("detail-order-id") as HTMLElement).textContent = `Order ID: #${id.toUpperCase()}`;
+    (document.getElementById("detail-cust-name") as HTMLElement).textContent = o.userName || "—";
+    (document.getElementById("detail-cust-phone") as HTMLElement).textContent = o.userPhone || "—";
+    (document.getElementById("detail-cust-email") as HTMLElement).textContent = o.userEmail || "—";
+    (document.getElementById("detail-cust-address") as HTMLElement).textContent = o.address || "—";
+    (document.getElementById("detail-cust-payment") as HTMLElement).textContent = o.paymentMethod || "Cash on Delivery";
+    (document.getElementById("detail-grand-total") as HTMLElement).textContent = `₹${Number(o.totalPrice).toFixed(2)}`;
+    (document.getElementById("detail-status-select") as HTMLSelectElement).value = o.orderStatus || "Pending";
+
+    updatePipelineTracker(o.orderStatus || "Pending");
+
+    const tbody = document.getElementById("detail-items-body");
+    if (tbody) {
+      tbody.innerHTML = (o.foodItems || []).map((i: any) => {
+        const sub = Number(i.price) * Number(i.quantity);
+        return `
+          <tr>
+            <td><strong>${esc(i.foodName)}</strong></td>
+            <td><span class="category-badge" style="background: rgba(160,200,120,0.1); color: var(--text); border-color: rgba(160,200,120,0.3); font-weight:700;">${esc(i.restaurant || 'FoodExpress Special')}</span></td>
+            <td style="text-align:center;">${i.quantity}</td>
+            <td>₹${Number(i.price).toFixed(2)}</td>
+            <td><strong>₹${sub.toFixed(2)}</strong></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closeOrderDetail() {
+    const modal = document.getElementById("order-detail-modal");
+    if (modal) modal.style.display = "none";
+    activeOrderDetailId = "";
+    activeOrderDetailData = null;
+  }
+
+  function printReceipt(id: string, o: any) {
+    if (!id || !o) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Popup blocked! Please allow popups to print invoices.");
+      return;
+    }
+
+    const dateStr = o.createdAt?.toDate?.()?.toLocaleString("en-IN") || new Date().toLocaleString();
+    const itemsHtml = (o.foodItems || []).map((i: any) => `
+      <tr>
+        <td style="padding:8px 0; border-bottom:1px solid #eee;">
+          <strong>${esc(i.foodName)}</strong><br>
+          <small style="color:#666;">Source: ${esc(i.restaurant || 'FoodExpress Special')}</small>
+        </td>
+        <td style="padding:8px 0; text-align:center; border-bottom:1px solid #eee;">${i.quantity}</td>
+        <td style="padding:8px 0; text-align:right; border-bottom:1px solid #eee;">₹${Number(i.price).toFixed(2)}</td>
+        <td style="padding:8px 0; text-align:right; border-bottom:1px solid #eee;">₹${(Number(i.price) * Number(i.quantity)).toFixed(2)}</td>
+      </tr>
+    `).join("");
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice - #${id.toUpperCase()}</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; margin: 40px; line-height: 1.5; }
+            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+            .brand { font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { border-bottom: 2px solid #ddd; padding: 10px 0; text-align: left; }
+            .total { font-size: 18px; font-weight: 800; text-align: right; margin-top: 20px; border-top: 2px solid #333; padding-top: 10px; }
+            @media print { body { margin: 20px; } .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="brand">🍔 FoodExpress</div>
+            <div style="font-size: 12px; margin-top: 5px; color: #666;">Online Food Marketplace Middleman Invoice</div>
+          </div>
+          <div class="info-grid">
+            <div>
+              <strong>CUSTOMER DETAILS</strong><br>
+              Name: ${esc(o.userName)}<br>
+              Phone: ${esc(o.userPhone)}<br>
+              Email: ${esc(o.userEmail)}<br>
+              Address: ${esc(o.address)}
+            </div>
+            <div style="text-align: right;">
+              <strong>ORDER SUMMARY</strong><br>
+              Order: #${id.toUpperCase()}<br>
+              Date: ${dateStr}<br>
+              Payment: ${esc(o.paymentMethod || 'Cash on Delivery')}<br>
+              Status: ${esc(o.orderStatus)}
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Details</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Price</th>
+                <th style="text-align:right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          <div class="total">Grand Total: ₹${Number(o.totalPrice).toFixed(2)}</div>
+          <div class="no-print" style="margin-top:40px; text-align:center;">
+            <button onclick="window.print()" style="padding:10px 20px; font-weight:700; background:#4ade80; border:none; border-radius:5px; cursor:pointer;">Print Receipt</button>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
+  async function loadAdminOrders() {
+    const tableBody = document.getElementById("admin-orders-table");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Loading orders...</td></tr>`;
+
+    try {
+      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center muted">No orders found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = "";
+      snap.forEach(docSnap => {
+        const o = { id: docSnap.id, ...docSnap.data() };
+        const date = o.createdAt?.toDate?.()?.toLocaleDateString("en-IN") || "—";
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td><code>#${o.id.slice(-8).toUpperCase()}</code></td>
+          <td>
+            <strong>${esc(o.userName || '—')}</strong>
+            <div style="font-size:0.75rem; color:var(--text-2); margin-top:0.25rem;">📞 ${esc(o.userPhone || '—')}</div>
+          </td>
+          <td>${(o.foodItems || []).map(i => `${esc(i.foodName)}×${i.quantity} <small style="color:var(--primary); font-weight:700;">(${esc(i.restaurant)})</small>`).join(", ")}</td>
+          <td><strong>₹${Number(o.totalPrice).toFixed(2)}</strong></td>
+          <td>
+            <span class="category-badge status-${(o.orderStatus || 'Pending').toLowerCase().replace(' ', '-')}" style="padding: 4px 10px; border-radius: 99px; font-weight: 700; font-size: 0.75rem;">
+              ${esc(o.orderStatus || 'Pending')}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline view-order-btn" data-id="${o.id}">🔍 View Dispatch</button>
+          </td>`;
+        tableBody.appendChild(row);
+      });
+
+      // Bind view details action
+      document.querySelectorAll(".view-order-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
+          if (id) {
+            const docSnap = snap.docs.find(d => d.id === id);
+            if (docSnap) openOrderDetail(id, docSnap.data());
+          }
+        });
+      });
+    } catch (err) {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center muted">Failed to load orders.</td></tr>`;
+    }
+  }
+
+  async function handleUpdateOrderStatus(id, status) {
+    try {
+      await updateDoc(doc(db, "orders", id), { orderStatus: status });
+      toast(`✅ Status updated to ${status}`);
+      if (activeOrderDetailId === id) {
+        updatePipelineTracker(status);
+      }
+      await loadAdminOrders();
+      await loadStats();
+    } catch(err) {
+      toast("❌ Failed to update status.", "error");
+    }
+  }
+
+  // Add Food Form Handler
+  const addForm = document.getElementById("add-food-form");
+  if (addForm) {
+    addForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = addForm.querySelector("[type=submit]") as HTMLButtonElement;
+
+      const nameVal = (document.getElementById("food-name") as HTMLInputElement).value.trim();
+      const categoryVal = (document.getElementById("food-category") as HTMLInputElement).value.trim();
+      const restaurantVal = (document.getElementById("food-restaurant") as HTMLSelectElement).value;
+      const priceVal = Number((document.getElementById("food-price") as HTMLInputElement).value);
+      const imageVal = (document.getElementById("food-image") as HTMLInputElement).value.trim() || "images/pizza.jpg";
+      const descVal = (document.getElementById("food-description") as HTMLTextAreaElement).value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Adding…";
+
+      try {
+        await addDoc(collection(db, "foods"), {
+          foodName: nameVal,
+          category: categoryVal,
+          restaurant: restaurantVal,
+          price: priceVal,
+          image: imageVal,
+          description: descVal,
+          createdAt: new Date().toISOString()
+        });
+
+        toast("✅ New food item added!");
+        addForm.reset();
+        await loadAdminFoods();
+        await loadStats();
+      } catch (err) {
+        toast("❌ Failed to add food item.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "+ Add Food Item";
+      }
+    });
+  }
+
+  // Seeding default food items (with Zomato/Swiggy restaurant partner branding)
+  const DEFAULT_FOODS = [
+    { foodName: "Chicken Biryani", category: "Biryani", price: 349, image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=600&q=80", description: "Aromatic basmati rice cooked with tender chicken, saffron, and traditional spices.", restaurant: "Paradise Biryani" },
+    { foodName: "Mutton Haleem", category: "Haleem", price: 299, image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80", description: "Slow-cooked mutton, wheat, lentils, and ghee, pounded to a rich, savory paste.", restaurant: "Shah Ghouse" },
+    { foodName: "South Indian Masala Dosa", category: "Tiffin", price: 99, image: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80", description: "Crispy fermented rice crepe filled with spiced potato mash, served with chutney and sambar.", restaurant: "Chutneys" },
+    { foodName: "Soft Steamed Idli Sambar", category: "Tiffin", price: 79, image: "https://images.unsplash.com/photo-1680373854583-lY2m5lxJrmQ?auto=format&fit=crop&w=600&q=80", description: "Fluffy steamed rice cakes served with hot lentil sambar and spicy peanut chutney.", restaurant: "Chutneys" },
+    { foodName: "Traditional Puri Bhaji", category: "Tiffin", price: 89, image: "images/puri_bhaji.png", description: "Golden, puffy fried whole wheat flatbreads served with a mildly spiced potato curry.", restaurant: "Bikanervala" },
+    { foodName: "Double Ka Meetha", category: "Dessert", price: 149, image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80", description: "Traditional sweet bread pudding soaked in saffron-infused milk and loaded with dry fruits.", restaurant: "Mehfil Restaurant" },
+    { foodName: "Mirchi Ka Salan", category: "Curry", price: 179, image: "images/paneer.jpg", description: "Tangy and spicy green chili curry prepared with peanuts, sesame seeds, and tamarind.", restaurant: "Mehfil Restaurant" },
+    { foodName: "Special Irani Chai", category: "Beverages (Hot)", price: 49, image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80", description: "Rich, creamy, and slow-brewed traditional Irani Chai.", restaurant: "Irani Cafe" },
+    { foodName: "Irani Cafe Bun Maska", category: "Breads", price: 69, image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80", description: "Soft, freshly baked bun loaded with premium salted butter, perfect with Irani Chai.", restaurant: "Irani Cafe" },
+    { foodName: "Biryani & Thums Up Combo", category: "Combos", price: 389, image: "images/biryani_combo.png", description: "Chicken Biryani served with a chilled bottle of Thums Up. [Combo Discount: 5% Off]", restaurant: "Shah Ghouse" },
+    { foodName: "Chai & Bun Maska Combo", category: "Combos", price: 99, image: "images/chai_bun_combo.png", description: "Classic pairing of hot Irani Chai and Bun Maska. [Combo Discount: 15% Off]", restaurant: "Irani Cafe" }
+  ];
+
+  const seedBtn = document.getElementById("seed-menu-btn");
+  if (seedBtn) {
+    seedBtn.addEventListener("click", async () => {
+      if (!confirm("This will seed default menu items. Proceed?")) return;
+      const submitBtn = seedBtn as HTMLButtonElement;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Seeding...";
+      try {
+        const snap = await getDocs(collection(db, "foods"));
+        let added = 0;
+        for (const f of DEFAULT_FOODS) {
+          const exists = snap.docs.some(d => d.data().foodName === f.foodName);
+          if (!exists) {
+            await addDoc(collection(db, "foods"), f);
+            added++;
+          }
+        }
+        toast(`🌱 Successfully seeded ${added} new menu items!`);
+        await loadAdminFoods();
+        await loadStats();
+      } catch (err: any) {
+        console.error(err);
+        toast("❌ Seeding failed: " + err.message, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "🌱 Seed Default Menu";
+      }
+    });
+  }
+
+  // Floating Edit Modal Actions
+  function openEditModal(id: string, data: any) {
+    (document.getElementById("edit-food-id") as HTMLInputElement).value = id;
+    (document.getElementById("edit-food-name") as HTMLInputElement).value = data.foodName || "";
+    (document.getElementById("edit-food-category") as HTMLSelectElement).value = data.category || "";
+    (document.getElementById("edit-food-restaurant") as HTMLSelectElement).value = data.restaurant || "Shah Ghouse";
+    (document.getElementById("edit-food-price") as HTMLInputElement).value = data.price || "";
+    (document.getElementById("edit-food-image") as HTMLInputElement).value = data.image || "";
+    (document.getElementById("edit-food-description") as HTMLTextAreaElement).value = data.description || "";
+    
+    const modal = document.getElementById("edit-food-modal");
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closeEditModal() {
+    const modal = document.getElementById("edit-food-modal");
+    if (modal) modal.style.display = "none";
+  }
+
+  // Close bindings
+  document.getElementById("close-edit-modal")?.addEventListener("click", closeEditModal);
+  document.getElementById("cancel-edit-btn")?.addEventListener("click", closeEditModal);
+
+  // Preset Buttons for Add form
+  document.querySelectorAll(".add-preset-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const url = btn.getAttribute("data-url");
+      const inp = document.getElementById("food-image") as HTMLInputElement;
+      if (url && inp) inp.value = url;
+    });
+  });
+
+  // Preset Buttons for Edit form
+  document.querySelectorAll(".edit-preset-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const url = btn.getAttribute("data-url");
+      const inp = document.getElementById("edit-food-image") as HTMLInputElement;
+      if (url && inp) inp.value = url;
+    });
+  });
+
+  // Edit Form Submit Handler
+  const editForm = document.getElementById("edit-food-form");
+  if (editForm) {
+    editForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = editForm.querySelector("[type=submit]") as HTMLButtonElement;
+
+      const id = (document.getElementById("edit-food-id") as HTMLInputElement).value;
+      const nameVal = (document.getElementById("edit-food-name") as HTMLInputElement).value.trim();
+      const categoryVal = (document.getElementById("edit-food-category") as HTMLSelectElement).value;
+      const restaurantVal = (document.getElementById("edit-food-restaurant") as HTMLSelectElement).value;
+      const priceVal = Number((document.getElementById("edit-food-price") as HTMLInputElement).value);
+      const imageVal = (document.getElementById("edit-food-image") as HTMLInputElement).value.trim();
+      const descVal = (document.getElementById("edit-food-description") as HTMLTextAreaElement).value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving…";
+
+      try {
+        await updateDoc(doc(db, "foods", id), {
+          foodName: nameVal,
+          category: categoryVal,
+          restaurant: restaurantVal,
+          price: priceVal,
+          image: imageVal,
+          description: descVal
+        });
+
+        toast("✅ Food item updated!");
+        closeEditModal();
+        await loadAdminFoods();
+        await loadStats();
+      } catch (err) {
+        toast("❌ Failed to update food item.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save Changes";
+      }
+    });
+  }
+
+  // Swiggy/Zomato dispatch details modal actions
+  document.getElementById("close-order-detail-modal")?.addEventListener("click", closeOrderDetail);
+  document.getElementById("close-detail-modal-btn")?.addEventListener("click", closeOrderDetail);
+  document.getElementById("order-detail-modal")?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeOrderDetail();
+  });
+  document.getElementById("print-invoice-btn")?.addEventListener("click", () => {
+    if (activeOrderDetailId && activeOrderDetailData) {
+      printReceipt(activeOrderDetailId, activeOrderDetailData);
+    }
+  });
+  document.getElementById("detail-status-select")?.addEventListener("change", (e) => {
+    const val = (e.target as HTMLSelectElement).value;
+    if (activeOrderDetailId && val) {
+      handleUpdateOrderStatus(activeOrderDetailId, val);
+    }
+  });
+
+  // Handle File Upload to Base64
+  const setupFileHelper = (fileInputId: string, textInputId: string) => {
+    const fileInp = document.getElementById(fileInputId) as HTMLInputElement;
+    if (fileInp) {
+      fileInp.addEventListener("change", () => {
+        const file = fileInp.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const base64 = e.target?.result as string;
+            const txtInp = document.getElementById(textInputId) as HTMLInputElement;
+            if (txtInp) txtInp.value = base64;
+            toast("📁 Image uploaded successfully!");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  };
+
+  setupFileHelper("food-image-file", "food-image");
+  setupFileHelper("edit-food-image-file", "edit-food-image");
+
+  // Handle Clipboard Paste to Base64
+  const setupPasteHelper = (textInputId: string) => {
+    const txtInp = document.getElementById(textInputId);
+    if (txtInp) {
+      txtInp.addEventListener("paste", (e: any) => {
+        const items = e.clipboardData?.items;
+        if (items) {
+          for (const item of items) {
+            if (item.type.indexOf("image") !== -1) {
+              const file = item.getAsFile();
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                  const base64 = evt.target?.result as string;
+                  (txtInp as HTMLInputElement).value = base64;
+                  toast("📋 Image pasted successfully!");
+                };
+                reader.readAsDataURL(file);
+              }
+            }
+          }
+        }
+      });
+    }
+  };
+
+  setupPasteHelper("food-image");
+  setupPasteHelper("edit-food-image");
+
+  // Handle Clipboard Paste Button Click
+  const setupPasteButtonHelper = (btnId: string, textInputId: string) => {
+    const btn = document.getElementById(btnId);
+    btn?.addEventListener("click", async () => {
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          for (const type of item.types) {
+            if (type.startsWith("image/")) {
+              const blob = await item.getType(type);
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const base64 = e.target?.result as string;
+                const txtInp = document.getElementById(textInputId) as HTMLInputElement;
+                if (txtInp) txtInp.value = base64;
+                toast("📋 Image pasted successfully!");
+              };
+              reader.readAsDataURL(blob);
+              return;
+            }
+          }
+        }
+        toast("❌ No image found in clipboard. Copy an image first!", "error");
+      } catch (err) {
+        toast("ℹ️ Clipboard blocked. Press Ctrl+V directly inside the input to paste!", "error");
+      }
+    });
+  };
+
+  setupPasteButtonHelper("food-image-paste-btn", "food-image");
+  setupPasteButtonHelper("edit-food-image-paste-btn", "edit-food-image");
+
+  // Real-time image preview helper
+  const setupPreview = (inputId: string, imgId: string, labelId: string) => {
+    const inp = document.getElementById(inputId) as HTMLInputElement;
+    const img = document.getElementById(imgId) as HTMLImageElement;
+    const lbl = document.getElementById(labelId) as HTMLElement;
+
+    if (!inp || !img || !lbl) return;
+
+    const update = () => {
+      const val = inp.value.trim();
+      if (val) {
+        img.src = val;
+        img.style.display = "block";
+        lbl.style.display = "block";
+      } else {
+        img.style.display = "none";
+        lbl.style.display = "none";
+      }
+    };
+
+    inp.value = ""; // start empty
+    inp.addEventListener("input", update);
+    inp.addEventListener("change", update);
+    
+    // Check periodically for presets/uploads programmatical changes
+    setInterval(update, 400);
+  };
+
+  setupPreview("food-image", "food-image-preview", "food-image-preview-label");
+  setupPreview("edit-food-image", "edit-food-image-preview", "edit-food-image-preview-label");
+
+  // Sidebar Active Highlighting & Tab Switcher (Avoiding Clutter)
+  const sidebarItems = document.querySelectorAll(".sidebar-item");
+  const tabContents = document.querySelectorAll(".admin-tab-content");
+
+  const switchTab = (targetId: string) => {
+    // Hide all tabs
+    tabContents.forEach(el => {
+      (el as HTMLElement).style.display = "none";
+    });
+    // Show target tab
+    const targetSec = document.querySelector(targetId) as HTMLElement;
+    if (targetSec) targetSec.style.display = "block";
+    
+    // Toggle active class
+    sidebarItems.forEach(el => {
+      if (el.getAttribute("href") === targetId) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+
+    // Update hash
+    window.location.hash = targetId;
+  };
+
+  sidebarItems.forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      if (item.classList.contains("mock-link")) {
+        toast("⚙️ This Operations Center feature will be available in the next release!", "info");
+        return;
+      }
+
+      const targetId = item.getAttribute("href");
+      if (targetId) switchTab(targetId);
+    });
+  });
+
+  // Run on page load to preserve selected tab
+  const initTab = () => {
+    const hash = window.location.hash;
+    if (hash && document.querySelector(hash)?.classList.contains("admin-tab-content")) {
+      switchTab(hash);
+    } else {
+      switchTab("#section-stats");
+    }
+  };
+  initTab();
+
+  // Load / Save Gemini API Key (UI Masked & Secured)
+  const apiKeyInput = document.getElementById("gemini-api-key") as HTMLInputElement;
+  const saveKeyBtn = document.getElementById("save-api-key-btn") as HTMLButtonElement;
+  const rotateKeyBtn = document.getElementById("rotate-api-key-btn") as HTMLButtonElement;
+  
+  const enc = (s) => btoa(s);
+  const dec = (s) => { try { return atob(s); } catch { return ""; } };
+
+  const refreshKeyUI = () => {
+    const stored = localStorage.getItem("gemini_api_key_obf") || localStorage.getItem("gemini_api_key");
+    if (stored) {
+      if (apiKeyInput) {
+        apiKeyInput.value = "••••••••••••••••••••••••••••••••";
+        apiKeyInput.disabled = true;
+      }
+      if (saveKeyBtn) saveKeyBtn.style.display = "none";
+      if (rotateKeyBtn) rotateKeyBtn.style.display = "inline-block";
+    } else {
+      if (apiKeyInput) {
+        apiKeyInput.value = "";
+        apiKeyInput.disabled = false;
+      }
+      if (saveKeyBtn) saveKeyBtn.style.display = "inline-block";
+      if (rotateKeyBtn) rotateKeyBtn.style.display = "none";
+    }
+  };
+  refreshKeyUI();
+
+  saveKeyBtn?.addEventListener("click", () => {
+    if (apiKeyInput) {
+      const key = apiKeyInput.value.trim();
+      if (!key) {
+        toast("❌ Please enter a valid API key.", "error");
+        return;
+      }
+      localStorage.setItem("gemini_api_key_obf", enc(key));
+      localStorage.removeItem("gemini_api_key"); // clean up legacy un-obfuscated key
+      toast("⚙️ Gemini API Key saved successfully!");
+      refreshKeyUI();
+    }
+  });
+
+  rotateKeyBtn?.addEventListener("click", () => {
+    localStorage.removeItem("gemini_api_key_obf");
+    localStorage.removeItem("gemini_api_key");
+    toast("🔄 Key reset. Ready to paste new API key.");
+    refreshKeyUI();
+    apiKeyInput?.focus();
+  });
+
+  // Admin Logout Handler
+  const logoutBtn = document.getElementById("admin-top-logout-btn");
+  logoutBtn?.addEventListener("click", async () => {
+    if (confirm("Are you sure you want to sign out?")) {
+      await signOut(auth);
+      window.location.href = "/";
+    }
+  });
+
+  // Gemini AI Description Writer
+  const generateDescription = async (nameId: string, catId: string, descId: string, btnId: string) => {
+    const nameVal = (document.getElementById(nameId) as HTMLInputElement).value.trim();
+    const catVal = (document.getElementById(catId) as HTMLInputElement).value.trim();
+    const descArea = document.getElementById(descId) as HTMLTextAreaElement;
+    const btn = document.getElementById(btnId) as HTMLButtonElement;
+
+    if (!nameVal) {
+      toast("❌ Please enter a Food Name first.", "error");
+      return;
+    }
+
+    let apiKey = "";
+    const storedObf = localStorage.getItem("gemini_api_key_obf");
+    if (storedObf) {
+      apiKey = dec(storedObf);
+    } else {
+      apiKey = localStorage.getItem("gemini_api_key") || "";
+    }
+
+    if (!apiKey) {
+      toast("❌ Please save your Gemini API Key in the Settings section first.", "error");
+      switchTab("#section-settings");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Writing...";
+
+    try {
+      const promptText = `Write a delicious, short one-sentence food description for: ${nameVal} ${catVal ? `(Category: ${catVal})` : ''}. Make it mouth-watering and concise (max 20 words). Do not include any introductory words, quotation marks, or leading text, just write the description.`;
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: promptText }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}`);
+      }
+
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+      if (text) {
+        descArea.value = text;
+        toast("✨ AI Description generated!");
+      } else {
+        throw new Error("Empty response from Gemini model.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast(`❌ Generation failed: ${err.message || err}`, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🪄 AI Write";
+    }
+  };
+
+  document.getElementById("ai-gen-desc-btn")?.addEventListener("click", () => {
+    generateDescription("food-name", "food-category", "food-description", "ai-gen-desc-btn");
+  });
+
+  document.getElementById("edit-ai-gen-desc-btn")?.addEventListener("click", () => {
+    generateDescription("edit-food-name", "edit-food-category", "edit-food-description", "edit-ai-gen-desc-btn");
+  });
+
+  // Mobile Sidebar Toggle Panel
+  const sidebar = document.querySelector(".admin-sidebar");
+  const toggleBtn = document.getElementById("sidebar-toggle-btn");
+  const backdrop = document.getElementById("sidebar-backdrop");
+
+  const openSidebar = () => {
+    sidebar?.classList.add("open");
+    if (backdrop) backdrop.style.display = "block";
+    document.body.style.overflow = "hidden"; // Prevent background body scrolling
+  };
+
+  const closeSidebar = () => {
+    sidebar?.classList.remove("open");
+    if (backdrop) backdrop.style.display = "none";
+    document.body.style.overflow = ""; // Restore scrolling
+  };
+
+  toggleBtn?.addEventListener("click", openSidebar);
+  backdrop?.addEventListener("click", closeSidebar);
+
+  // Close when clicking any menu link on mobile
+  document.querySelectorAll(".sidebar-item").forEach(item => {
+    item.addEventListener("click", () => {
+      closeSidebar();
+    });
+  });
+
+  // --- EDITOR ACCESS CONTROL MANAGEMENT ---
+  async function loadAuthorizedEditors() {
+    const listBody = document.getElementById("authorized-editors-list");
+    if (!listBody) return;
+
+    listBody.innerHTML = `<tr><td colspan="4" class="text-center">Loading authorized members...</td></tr>`;
+
+    try {
+      const snap = await getDocs(collection(db, "editors"));
+      if (snap.empty) {
+        listBody.innerHTML = `<tr><td colspan="4" class="text-center muted">No members authorized. Add one above!</td></tr>`;
+        return;
+      }
+
+      listBody.innerHTML = "";
+      snap.forEach(docSnap => {
+        const ed = { id: docSnap.id, ...docSnap.data() };
+        const row = document.createElement("tr");
+
+        const role = ed.role || "editor";
+        const roleLabel = role === "dev-admin" ? "💻 Dev Admin" : "✏️ Menu Editor";
+
+        row.innerHTML = `
+          <td><strong>${esc(ed.email)}</strong></td>
+          <td><span class="badge" style="background:${role === 'dev-admin' ? '#60a5fa' : 'rgba(160,200,120,0.15)'}; color:${role === 'dev-admin' ? '#fff' : 'var(--text-2)'};">${roleLabel}</span></td>
+          <td><span class="muted">${esc(ed.addedBy || "Admin")}</span></td>
+          <td>
+            <button class="btn btn-danger btn-sm remove-editor-btn" data-id="${ed.id}">🗑️ Remove</button>
+          </td>`;
+        listBody.appendChild(row);
+      });
+
+      // Bind removes
+      document.querySelectorAll(".remove-editor-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
+          if (id && confirm("Are you sure you want to remove authorization for this editor?")) {
+            await handleRemoveEditor(id);
+          }
+        });
+      });
+    } catch (err) {
+      listBody.innerHTML = `<tr><td colspan="4" class="text-center muted">Failed to load editors.</td></tr>`;
+    }
+  }
+
+  async function handleRemoveEditor(id) {
+    try {
+      await deleteDoc(doc(db, "editors", id));
+      toast("🗑️ Member authorization removed!");
+      await Promise.all([
+        loadAuthorizedEditors(),
+        loadAdminUsers()
+      ]);
+    } catch(err) {
+      toast("❌ Remove failed.", "error");
+    }
+  }
+
+  const addEditorForm = document.getElementById("add-editor-form");
+  if (addEditorForm) {
+    addEditorForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = addEditorForm.querySelector("[type=submit]") as HTMLButtonElement;
+      const emailInput = document.getElementById("new-editor-email") as HTMLInputElement;
+      const emailVal = emailInput.value.trim().toLowerCase();
+      const roleInput = document.getElementById("new-editor-role") as HTMLSelectElement;
+      const roleVal = roleInput ? roleInput.value : "editor";
+
+      if (!emailVal) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Adding...";
+
+      try {
+        const snap = await getDocs(collection(db, "editors"));
+        let exists = false;
+        snap.forEach(d => {
+          if (d.data().email === emailVal) exists = true;
+        });
+
+        if (exists) {
+          toast("❌ Email is already authorized!", "error");
+        } else {
+          await setDoc(doc(db, "editors", emailVal), {
+            email: emailVal,
+            role: roleVal,
+            createdAt: new Date(),
+            addedBy: auth.currentUser?.email || "Admin"
+          });
+          toast("✅ Authorized member added!");
+          emailInput.value = "";
+          await Promise.all([
+            loadAuthorizedEditors(),
+            loadAdminUsers()
+          ]);
+        }
+      } catch (err) {
+        toast("❌ Failed to authorize editor.", "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "➕ Add Member";
+      }
+    });
+  }
+
+  // --- SYSTEM MAINTENANCE MODE MANAGEMENT ---
+  async function loadMaintenanceMode() {
+    try {
+      const docSnap = await getDoc(doc(db, "settings", "config"));
+      if (docSnap.exists()) {
+        const isMaint = docSnap.data().maintenanceMode || false;
+        const chk = document.getElementById("maintenance-toggle") as HTMLInputElement;
+        if (chk) chk.checked = isMaint;
+      }
+    } catch(err) {
+      console.error("Failed to load maintenance mode status:", err);
+    }
+  }
+
+  const saveMaintBtn = document.getElementById("save-maintenance-btn");
+  saveMaintBtn?.addEventListener("click", async () => {
+    const chk = document.getElementById("maintenance-toggle") as HTMLInputElement;
+    const isMaint = chk ? chk.checked : false;
+
+    saveMaintBtn.disabled = true;
+    saveMaintBtn.textContent = "Saving...";
+
+    try {
+      await setDoc(doc(db, "settings", "config"), { maintenanceMode: isMaint }, { merge: true });
+      toast(`🔧 Maintenance Mode ${isMaint ? "ENABLED" : "DISABLED"}!`);
+    } catch(err) {
+      toast("❌ Failed to save maintenance settings.", "error");
+    } finally {
+      saveMaintBtn.disabled = false;
+      saveMaintBtn.textContent = "Save Settings";
+    }
+  });
+
+  // --- USER ACCOUNT MANAGEMENT ---
+  async function loadAdminUsers() {
+    const tableBody = document.getElementById("admin-users-table");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="5" class="text-center">Loading registered users...</td></tr>`;
+
+    try {
+      const [usersSnap, editorsSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "editors"))
+      ]);
+
+      const editorRoles = new Map(); // maps email -> role string
+      const editorDocIds = new Map(); // maps email -> docId
+      editorsSnap.forEach(d => {
+        const email = d.data().email.toLowerCase();
+        editorRoles.set(email, d.data().role || "editor");
+        editorDocIds.set(email, d.id);
+      });
+
+      if (usersSnap.empty) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center muted">No registered users synced.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = "";
+      usersSnap.forEach(docSnap => {
+        const u = docSnap.data();
+        const email = u.email.toLowerCase();
+        
+        let roleLabel = "👤 Customer";
+        let roleBadgeColor = "rgba(160,200,120,0.15)";
+        let actionHtml = "";
+
+        if (email === ADMIN_EMAIL) {
+          roleLabel = "🛡️ Super Admin";
+          roleBadgeColor = "#ef4444";
+          actionHtml = `<span class="muted">Access Locked</span>`;
+        } else if (editorRoles.has(email)) {
+          const r = editorRoles.get(email);
+          roleLabel = r === "dev-admin" ? "💻 Dev Admin" : "✏️ Menu Editor";
+          roleBadgeColor = r === "dev-admin" ? "#60a5fa" : "#3b82f6";
+          const docId = editorDocIds.get(email);
+          actionHtml = `<button class="btn btn-danger btn-sm revoke-user-editor-btn" data-email="${email}" data-doc-id="${docId}">🗑️ Revoke Access</button>`;
+        } else {
+          roleLabel = "👤 Customer";
+          roleBadgeColor = "rgba(160,200,120,0.15)";
+          actionHtml = `<button class="btn btn-outline btn-sm grant-user-editor-btn" data-email="${email}">➕ Grant Access</button>`;
+        }
+
+        const lastLoginDate = u.lastLogin?.toDate ? u.lastLogin.toDate() : new Date();
+        const dateStr = lastLoginDate.toLocaleString();
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${esc(u.displayName || "Customer")}</strong></td>
+          <td>${esc(u.email)}</td>
+          <td><span class="muted">${dateStr}</span></td>
+          <td><span class="badge" style="background:${roleBadgeColor}; color:${roleLabel === '👤 Customer' ? 'var(--text-2)' : '#fff'};">${roleLabel}</span></td>
+          <td>${actionHtml}</td>`;
+        tableBody.appendChild(row);
+      });
+
+      // Bind actions
+      document.querySelectorAll(".grant-user-editor-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const email = (e.currentTarget as HTMLElement).getAttribute("data-email");
+          if (email) {
+            const role = confirm(`Grant Dev Admin privileges to ${email}? (Select OK for Dev Admin, Cancel for Menu Editor)`) ? "dev-admin" : "editor";
+            await grantEditorRole(email, role);
+          }
+        });
+      });
+
+      document.querySelectorAll(".revoke-user-editor-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const docId = (e.currentTarget as HTMLElement).getAttribute("data-doc-id");
+          if (docId) {
+            await revokeEditorRole(docId);
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error(err);
+      tableBody.innerHTML = `<tr><td colspan="5" class="text-center muted">Failed to load users database.</td></tr>`;
+    }
+  }
+
+  async function grantEditorRole(email, role) {
+    try {
+      await setDoc(doc(db, "editors", email.toLowerCase()), {
+        email: email.toLowerCase(),
+        role: role,
+        createdAt: new Date(),
+        addedBy: auth.currentUser?.email || "Admin"
+      });
+      toast(`✅ Granted ${role === 'dev-admin' ? 'Dev Admin' : 'Menu Editor'} access to ${email}`);
+      await Promise.all([
+        loadAuthorizedEditors(),
+        loadAdminUsers()
+      ]);
+    } catch(err) {
+      toast("❌ Failed to grant permission.", "error");
+    }
+  }
+
+  async function revokeEditorRole(docId) {
+    try {
+      await deleteDoc(doc(db, "editors", docId));
+      toast(`🗑️ Permissions revoked.`);
+      await Promise.all([
+        loadAuthorizedEditors(),
+        loadAdminUsers()
+      ]);
+    } catch(err) {
+      toast("❌ Failed to revoke permission.", "error");
+    }
+  }
+</script>

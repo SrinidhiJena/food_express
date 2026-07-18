@@ -78,3 +78,53 @@ Clicking **Admin Panel** opens a modal with three tabs:
   - A trash icon button sending a `DELETE /api/foods/{id}` request.
   - An "Add Food Item" form to expand the menu.
 - **Manage Orders**: Displays a table of all orders with dropdown selectors. Toggling a dropdown choice sends a `PATCH /api/orders/{id}/status` request to update status.
+
+---
+
+## 6. 🔗 Frontend-Backend Communication Flow
+
+The frontend and backend interact as an asynchronous client-server architecture:
+
+```mermaid
+sequenceDiagram
+    participant FE as Browser Frontend (JS)
+    participant BE as Spring Boot Backend (Java)
+    participant DB as H2 Database
+
+    Note over FE: User Logs In
+    FE->>BE: POST /api/auth/login {email, password} (JSON)
+    BE->>DB: Query User credentials
+    DB-->>BE: User Info (Admin/User)
+    Note over BE: Generate JWT Token
+    BE-->>FE: HTTP 200 {success: true, data: {token, role, email}}
+    Note over FE: Store Token in LocalStorage
+
+    Note over FE: Admin clicks 'Admin Panel'
+    FE->>BE: GET /api/orders (Headers: Authorization: Bearer <token>)
+    Note over BE: JwtAuthenticationFilter validates Token
+    BE->>DB: Fetch all orders
+    DB-->>BE: Orders list
+    BE-->>FE: HTTP 200 {success: true, data: [orders]}
+    Note over FE: JS maps list & injects rows into Table DOM
+```
+
+### 1. Request Dispatch (Fetch API)
+All requests from the frontend to the backend are triggered asynchronously using the browser's native `fetch` API.
+Example of fetching user order details:
+```javascript
+const res = await fetch("/api/orders/my-orders", { 
+    headers: { "Authorization": `Bearer ${token}` } 
+});
+const data = await res.json();
+```
+
+### 2. Serialization & Serialization Content-Type
+- **Request Payloads**: The frontend serializes JavaScript objects to JSON strings using `JSON.stringify(payload)` and sets the `"Content-Type": "application/json"` header on `POST` / `PATCH` requests.
+- **Response Payloads**: The Spring Boot REST controllers automatically serialize returned Java maps/entities into JSON strings (using Jackson) and serve them with `Content-Type: application/json`.
+
+### 3. State Management & Authentication Headers
+- **Token Storage**: Upon successful login or signup, the backend returns a signed JWT token. The frontend stores this locally using `localStorage.setItem("token", token)`.
+- **Token Propagation**: For any protected endpoint (like placing orders, listing all orders, updating menu prices, or deleting items), the frontend reads the stored token and injects it into the HTTP headers:
+  `"Authorization": "Bearer " + token`
+- **Backend Filter Validation**: The `JwtAuthenticationFilter` intercepts all incoming requests, parses the `Authorization` header, extracts the token, verifies the signature, and populates the Spring Security Context so that controllers can query the authenticated user using `SecurityContextHolder.getContext().getAuthentication()`.
+
